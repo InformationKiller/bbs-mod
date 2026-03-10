@@ -17,6 +17,7 @@ import mchorse.bbs_mod.ui.utils.ScrollDirection;
 import mchorse.bbs_mod.utils.Pair;
 import mchorse.bbs_mod.utils.colors.Colors;
 import mchorse.bbs_mod.utils.interps.IInterp;
+import mchorse.bbs_mod.utils.interps.Interpolation;
 import mchorse.bbs_mod.utils.interps.Interpolations;
 import mchorse.bbs_mod.utils.interps.Lerps;
 import mchorse.bbs_mod.utils.keyframes.Keyframe;
@@ -215,20 +216,26 @@ public class UIKeyframeGraph implements IUIKeyframeGraph
                 return new Pair<>(keyframe, KeyframeType.REGULAR);
             }
 
-            int lx = this.keyframes.toGraphX(keyframe.getTick() - keyframe.lx);
-            int ly = this.toGraphY(keyframe.getFactory().getY(keyframe.getValue()) + keyframe.ly);
-
-            if (this.isNear(lx, ly, mouseX, mouseY))
+            if (i > 0 && ((Keyframe)keyframes.get(i - 1)).getInterpolation().getInterp() == Interpolations.BEZIER)
             {
-                return new Pair<>(keyframe, KeyframeType.LEFT_HANDLE);
+                int lx = this.keyframes.toGraphX(keyframe.getTick() - keyframe.lx);
+                int ly = this.toGraphY(keyframe.getFactory().getY(keyframe.getValue()) + keyframe.ly);
+
+                if (this.isNear(lx, ly, mouseX, mouseY))
+                {
+                    return new Pair<>(keyframe, KeyframeType.LEFT_HANDLE);
+                }
             }
 
-            int rx = this.keyframes.toGraphX(keyframe.getTick() + keyframe.rx);
-            int ry = this.toGraphY(keyframe.getFactory().getY(keyframe.getValue()) + keyframe.ry);
-
-            if (this.isNear(rx, ry, mouseX, mouseY))
+            if (keyframe.getInterpolation().getInterp() == Interpolations.BEZIER)
             {
-                return new Pair<>(keyframe, KeyframeType.RIGHT_HANDLE);
+                int rx = this.keyframes.toGraphX(keyframe.getTick() + keyframe.rx);
+                int ry = this.toGraphY(keyframe.getFactory().getY(keyframe.getValue()) + keyframe.ry);
+
+                if (this.isNear(rx, ry, mouseX, mouseY))
+                {
+                    return new Pair<>(keyframe, KeyframeType.RIGHT_HANDLE);
+                }
             }
         }
 
@@ -292,7 +299,7 @@ public class UIKeyframeGraph implements IUIKeyframeGraph
         else
         {
             boolean x = Window.isShiftPressed();
-            boolean y = Window.isCtrlPressed();
+            boolean y = Window.isAltPressed();
             boolean none = !x && !y;
 
             /* Scaling X */
@@ -300,7 +307,7 @@ public class UIKeyframeGraph implements IUIKeyframeGraph
             {
                 if (context.mouseWheel != 0D)
                 {
-                    this.keyframes.getXAxis().zoomAnchor(Scale.getAnchorX(context, this.keyframes.area), Math.copySign(this.keyframes.getXAxis().getZoomFactor(), context.mouseWheel));
+                    this.keyframes.getXAxis().zoomAnchor(Scale.getAnchorX(context, this.keyframes.graphArea), Math.copySign(this.keyframes.getXAxis().getZoomFactor(), context.mouseWheel));
                 }
             }
 
@@ -309,7 +316,7 @@ public class UIKeyframeGraph implements IUIKeyframeGraph
             {
                 if (context.mouseWheel != 0D)
                 {
-                    this.yAxis.zoomAnchor(Scale.getAnchorY(context, this.keyframes.area), Math.copySign(this.yAxis.getZoomFactor(), context.mouseWheel));
+                    this.yAxis.zoomAnchor(Scale.getAnchorY(context, this.keyframes.graphArea), Math.copySign(this.yAxis.getZoomFactor(), context.mouseWheel));
                 }
             }
         }
@@ -386,8 +393,10 @@ public class UIKeyframeGraph implements IUIKeyframeGraph
     @Override
     public void render(UIContext context)
     {
+        context.batcher.clip(this.keyframes.graphArea, context);
         this.renderGrid(context);
         this.renderGraph(context);
+        context.batcher.unclip(context);
     }
 
     /**
@@ -396,7 +405,7 @@ public class UIKeyframeGraph implements IUIKeyframeGraph
     protected void renderGrid(UIContext context)
     {
         /* Draw horizontal grid */
-        Area area = this.keyframes.area;
+        Area area = this.keyframes.graphArea;
         int mult = this.keyframes.getXAxis().getMult();
         int hx = this.keyframes.getDuration() / mult;
         int ht = (int) this.keyframes.fromGraphX(area.x);
@@ -671,7 +680,7 @@ public class UIKeyframeGraph implements IUIKeyframeGraph
                 int rx = this.keyframes.toGraphX(frame.getTick() + frame.rx);
                 int ry = this.toGraphY(sheet.channel.getFactory().getY(frame.getValue()) + frame.ry);
 
-                UIKeyframeDopeSheet.renderShape(frame, context, builder, matrix, rx, ry, 3, c);
+                UIKeyframeDopeSheet.renderShape(frame, context, builder, matrix, rx, ry, 2, c);
             }
 
             if (prev != null && prev.getInterpolation().getInterp() == Interpolations.BEZIER)
@@ -679,7 +688,7 @@ public class UIKeyframeGraph implements IUIKeyframeGraph
                 int lx = this.keyframes.toGraphX(frame.getTick() - frame.lx);
                 int ly = this.toGraphY(sheet.channel.getFactory().getY(frame.getValue()) + frame.ly);
 
-                UIKeyframeDopeSheet.renderShape(frame, context, builder, matrix, lx, ly, 3, c);
+                UIKeyframeDopeSheet.renderShape(frame, context, builder, matrix, lx, ly, 2, c);
             }
         }
 
@@ -702,8 +711,8 @@ public class UIKeyframeGraph implements IUIKeyframeGraph
                 int rx = this.keyframes.toGraphX(frame.getTick() + frame.rx);
                 int ry = this.toGraphY(sheet.channel.getFactory().getY(frame.getValue()) + frame.ry);
 
-                shapeResult = UIKeyframeDopeSheet.renderShape(frame, context, builder, matrix, rx, ry, 2, c | Colors.A100);
-                shapeResult.renderKeyframeBackground(context, builder, matrix, rx, ry, 2, c | Colors.A100);
+                shapeResult = UIKeyframeDopeSheet.renderShape(frame, context, builder, matrix, rx, ry, 1, c | Colors.A100);
+                shapeResult.renderKeyframeBackground(context, builder, matrix, rx, ry, 1, c | Colors.A100);
             }
 
             if (prev != null && prev.getInterpolation().getInterp() == Interpolations.BEZIER)
@@ -711,8 +720,8 @@ public class UIKeyframeGraph implements IUIKeyframeGraph
                 int lx = this.keyframes.toGraphX(frame.getTick() - frame.lx);
                 int ly = this.toGraphY(sheet.channel.getFactory().getY(frame.getValue()) + frame.ly);
 
-                shapeResult = UIKeyframeDopeSheet.renderShape(frame, context, builder, matrix, lx, ly, 2, c | Colors.A100);
-                shapeResult.renderKeyframeBackground(context, builder, matrix, lx, ly, 2, c | Colors.A100);
+                shapeResult = UIKeyframeDopeSheet.renderShape(frame, context, builder, matrix, lx, ly, 1, c | Colors.A100);
+                shapeResult.renderKeyframeBackground(context, builder, matrix, lx, ly, 1, c | Colors.A100);
             }
         }
 

@@ -87,4 +87,10 @@ public class UIRemapperClip extends UIClip<RemapperClip>
             data.putString("embed", "remapper");
         }
     }
+
+    @Override
+    public void handleDblClick()
+    {
+        this.edit.clickItself();
+    }
 }

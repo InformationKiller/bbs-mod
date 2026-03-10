@@ -149,4 +149,10 @@ public class UIKeyframeClip extends UIClip<KeyframeClip>
             data.putString("embed", "keyframe");
         }
     }
+
+    @Override
+    public void handleDblClick()
+    {
+        this.edit.clickItself();
+    }
 }

@@ -31,6 +31,7 @@ import mchorse.bbs_mod.ui.utils.ScrollDirection;
 import mchorse.bbs_mod.ui.utils.UIUtils;
 import mchorse.bbs_mod.ui.utils.context.ContextMenuManager;
 import mchorse.bbs_mod.ui.utils.icons.Icons;
+import mchorse.bbs_mod.ui.utils.keys.KeyAction;
 import mchorse.bbs_mod.ui.utils.presets.UICopyPasteController;
 import mchorse.bbs_mod.ui.utils.presets.UIPresetContextMenu;
 import mchorse.bbs_mod.utils.MathUtils;
@@ -133,6 +134,17 @@ public class UIClips extends UIElement
         context.batcher.textCard(label, x + 4, area.ey() - 2 - font.getHeight(), Colors.WHITE, Colors.setA(Colors.CURSOR, 0.75F), 2);
     }
 
+    public void onCloseEmbedded(UIIcon ui)
+    {
+        UIContext context = this.getContext();
+        int lastKey = context.getKeyCode();
+        int lastScan = context.getScanCode();
+        KeyAction lastAction = context.getKeyAction();
+        context.setKeyEvent(GLFW.GLFW_KEY_ESCAPE, 0, GLFW.GLFW_PRESS);
+        this.keyPressed(this.getContext());
+        context.setKeyEvent(lastKey, lastScan, lastAction == KeyAction.PRESSED ? GLFW.GLFW_PRESS : (lastAction == KeyAction.REPEAT ? GLFW.GLFW_REPEAT : GLFW.GLFW_RELEASE));
+    }
+
     public UIClips(IUIClipsDelegate delegate, IFactory<Clip, ClipFactoryData> factory)
     {
         super();
@@ -145,7 +157,7 @@ public class UIClips extends UIElement
         this.delegate = delegate;
         this.factory = factory;
 
-        this.embeddedClose = new UIIcon(Icons.CLOSE, (b) -> this.embedView(null));
+        this.embeddedClose = new UIIcon(Icons.CLOSE, this::onCloseEmbedded);
         this.embeddedClose.relative(this);
 
         this.context((menu) ->
@@ -1157,6 +1169,8 @@ public class UIClips extends UIElement
         return super.subMouseClicked(context);
     }
 
+    private long lastClick = -1;
+
     private boolean handleLeftClick(UIContext context, int mouseX, int mouseY, boolean ctrl, boolean shift, boolean alt)
     {
         if (!this.hasEmbeddedView())
@@ -1186,6 +1200,12 @@ public class UIClips extends UIElement
                         this.delegate.pickClip(clip);
                         this.setSelected(clip);
                     }
+                }
+                else if (!shift && context.mouseX == this.lastX && context.mouseY == this.lastY && System.currentTimeMillis() - this.lastClick < 500)
+                {
+                    this.clearSelection();
+                    this.delegate.handleDblClick();
+                    return true;
                 }
 
                 this.grabMode = this.getClipHandle(clip, context, this.getLayerHeight());
@@ -1228,6 +1248,7 @@ public class UIClips extends UIElement
                 }
 
                 this.setMouse(mouseX, mouseY);
+                this.lastClick = System.currentTimeMillis();
 
                 for (Clip selectedClip : this.getClipsFromSelection())
                 {

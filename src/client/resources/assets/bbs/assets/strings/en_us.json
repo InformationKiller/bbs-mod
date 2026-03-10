@@ -244,7 +244,7 @@
 	"bbs.ui.camera.clips.bbs:break_block": "Block breaking progress",
 	"bbs.ui.camera.clips.bbs:chat": "Chat message",
 	"bbs.ui.camera.clips.bbs:command": "Command",
-	"bbs.ui.camera.clips.bbs:curve": "Curve",
+	"bbs.ui.camera.clips.bbs:curve": "Shader Curve",
 	"bbs.ui.camera.clips.bbs:damage": "Damage",
 	"bbs.ui.camera.clips.bbs:dolly": "Dolly",
 	"bbs.ui.camera.clips.bbs:dolly_zoom": "Dolly zoom",
@@ -329,7 +329,9 @@
 	"bbs.ui.camera.panels.curve.remove": "Remove curve",
 	"bbs.ui.camera.panels.curves.brightness": "Brightness",
 	"bbs.ui.camera.panels.curves.sun_rotation": "Sun rotation",
+	"bbs.ui.camera.panels.curves.sun_path_rotation": "Sun path rotation",
 	"bbs.ui.camera.panels.curves.weather": "Weather",
+	"bbs.ui.camera.panels.curves.center_depth": "Focus Point",
 	"bbs.ui.camera.panels.deterministic": "Deterministic",
 	"bbs.ui.camera.panels.deterministic_tooltip": "When enabled, deterministic algorithm would be used to calculate reproducible smoothed out camera movement.",
 	"bbs.ui.camera.panels.distance": "Distance",
@@ -1339,5 +1341,13 @@
 	"studio.ui.utility.reload_terrain": "Terrain",
 	"studio.ui.utility.reload_textures": "Textures",
 	"studio.ui.utility.resize": "Resize window",
-	"studio.ui.utility.title": "Utility panel"
+	"studio.ui.utility.title": "Utility panel",
+
+    "bbs.ui.forms.editors.structure.light": "Light",
+    "bbs.ui.forms.editors.structure.light_intensity": "Light intensity (1-15)",
+    "bbs.ui.forms.editors.structure.pick_biome": "Pick biome...",
+    "bbs.ui.forms.editors.structure.pick_structure": "Pick structure...",
+    "bbs.ui.forms.editors.structure.title": "Structure",
+    "bbs.ui.importer.structure": "Structure (.nbt)",
+    "bbs.ui.model_blocks.light_level": "Light level"
 }

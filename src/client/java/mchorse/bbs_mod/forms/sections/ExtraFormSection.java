@@ -1,5 +1,6 @@
 package mchorse.bbs_mod.forms.sections;
 
+import mchorse.bbs_mod.BBSMod;
 import mchorse.bbs_mod.forms.FormCategories;
 import mchorse.bbs_mod.forms.categories.FormCategory;
 import mchorse.bbs_mod.forms.forms.AnchorForm;
@@ -9,7 +10,9 @@ import mchorse.bbs_mod.forms.forms.ExtrudedForm;
 import mchorse.bbs_mod.forms.forms.FramebufferForm;
 import mchorse.bbs_mod.forms.forms.ItemForm;
 import mchorse.bbs_mod.forms.forms.LabelForm;
+import mchorse.bbs_mod.forms.forms.LightForm;
 import mchorse.bbs_mod.forms.forms.MobForm;
+import mchorse.bbs_mod.forms.forms.StructureForm;
 import mchorse.bbs_mod.forms.forms.TrailForm;
 import mchorse.bbs_mod.forms.forms.VanillaParticleForm;
 import mchorse.bbs_mod.resources.Link;
@@ -52,6 +55,36 @@ public class ExtraFormSection extends FormSection
         ItemForm item = new ItemForm();
         VanillaParticleForm vanillaParticle = new VanillaParticleForm();
         TrailForm trail = new TrailForm();
+        StructureForm structure = new StructureForm();
+        LightForm light = new LightForm();
+        try
+        {
+            String preferred = "structures/tree.nbt";
+            boolean foundPreferred = false;
+
+            for (Link link : BBSMod.getProvider().getLinksFromPath(Link.assets("structures")))
+            {
+                if (!foundPreferred && preferred.equals(link.path))
+                {
+                    structure.structureFile.set(preferred);
+                    foundPreferred = true;
+                }
+            }
+
+            if (!foundPreferred)
+            {
+                for (Link link : BBSMod.getProvider().getLinksFromPath(Link.assets("structures")))
+                {
+                    if (link.path.toLowerCase().endsWith(".nbt"))
+                    {
+                        structure.structureFile.set(link.path);
+                        break;
+                    }
+                }
+            }
+        }
+        catch (Exception ignored)
+        {}
 
         billboard.texture.set(Link.assets("textures/error.png"));
         extruded.texture.set(Link.assets("textures/error.png"));
@@ -66,6 +99,8 @@ public class ExtraFormSection extends FormSection
         extra.addForm(item);
         extra.addForm(vanillaParticle);
         extra.addForm(trail);
+        extra.addForm(structure);
+        extra.addForm(light);
 
         this.mobsAnimals = new FormCategory(UIKeys.FORMS_CATEGORIES_MOBS_ANIMALS, this.parent.visibility.get("mobs_animals"));
         this.mobsNeutral = new FormCategory(UIKeys.FORMS_CATEGORIES_MOBS_NEUTRAL, this.parent.visibility.get("mobs_neutral"));

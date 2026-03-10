@@ -17,15 +17,21 @@ import java.util.regex.Pattern;
 public class ShaderCurves
 {
     public static Map<String, ShaderVariable> variableMap = new HashMap<>();
+    public static Set<String> prohibitedVariablesCurrent = new HashSet<>();
 
     private static Set<String> prohibitedVariables = new HashSet<>();
     private static Set<String> prohibitedConstIdentifiers = new HashSet<>();
 
     public static final String BRIGHTNESS = "brightness";
     public static final String SUN_ROTATION = "sun_rotation";
+    public static final String SUN_PATH_ROTATION = "sun_path_rotation";
     public static final String WEATHER = "weather";
+    public static final String CENTER_DEPTH = "center_depth";
 
     public static final String UNIFORM_IDENTIFIER = "bbs_";
+
+    public static final String SUN_PATH_ROTATION_CONST = "sunPathRotation";
+    public static final ShaderVariable SUN_PATH_ROTATION_VARIABLE = new ShaderVariable(SUN_PATH_ROTATION_CONST, "0.0", false);
 
     static
     {
@@ -38,6 +44,15 @@ public class ShaderCurves
     public static void reset()
     {
         variableMap.clear();
+        prohibitedVariablesCurrent.clear();
+
+        if (!BBSSettings.shaderCurvesEnabled.get())
+        {
+            return;
+        }
+
+        variableMap.put(SUN_PATH_ROTATION_CONST, SUN_PATH_ROTATION_VARIABLE);
+        SUN_PATH_ROTATION_VARIABLE.defaultValue = 0.0f;
     }
 
     public static void finishLoading()
@@ -51,11 +66,13 @@ public class ShaderCurves
         }
 
         Map<String, ShaderVariable> variables = parseVariables(source);
+        variables.put(SUN_PATH_ROTATION_CONST, SUN_PATH_ROTATION_VARIABLE);
 
         if (!variables.isEmpty())
         {
             removeIrrelevantVariables(source, variables);
 
+            source = patchSunPathRotation(source);
             source = replaceMacroReferences(source, variables);
             source = removeConstFromRelevantVariables(source);
             source = insertUniforms(source, variables);
@@ -69,12 +86,19 @@ public class ShaderCurves
         return source;
     }
 
+    private static String patchSunPathRotation(String source)
+    {
+        Pattern constPattern = Pattern.compile("const\\s+float\\s+sunPathRotation\\s*=\\s*-?[\\d.ef]+\\s*;");
+
+        return constPattern.matcher(source).replaceAll("");
+    }
+
     private static void removeIrrelevantVariables(String source, Map<String, ShaderVariable> variables)
     {
         /* Remove irrelevant variables */
         List<String> filter = BBSRendering.getShadersSliderOptions();
 
-        variables.values().removeIf((v) -> !filter.contains(v.name));
+        variables.values().removeIf((v) -> !filter.contains(v.name) && !v.name.equals(SUN_PATH_ROTATION_CONST));
 
         for (String prohibitedVariable : prohibitedVariables)
         {
@@ -93,6 +117,11 @@ public class ShaderCurves
 
                 if (substr.startsWith("#if") || substr.startsWith("#elif"))
                 {
+                    variables.values().forEach((v) ->
+                    {
+                        if (substr.contains(v.name)) prohibitedVariablesCurrent.add(v.name);
+                    });
+
                     variables.values().removeIf((v) -> substr.contains(v.name));
                 }
                 else if (substr.startsWith("#define"))
@@ -135,7 +164,8 @@ public class ShaderCurves
     private static Map<String, ShaderVariable> parseVariables(String source)
     {
         Map<String, ShaderVariable> variables = new HashMap<>();
-        Pattern definePattern = Pattern.compile("^\\s*(?!//)\\s*#define +([\\w_]+) +([\\d.]+) *// *(\\[|OptionAnnotatedSource)");
+        Pattern definePattern = Pattern.compile("^\\s*(?!//)\\s*#define\\s+([\\w_]+)\\s+(-?[\\d.ef]+)\\s*//\\s*(\\[|OptionAnnotatedSource)");
+        Pattern constPattern = Pattern.compile("^\\s*(?!//)\\s*const\\s+float\\s+sunPathRotation\\s*=\\s*(-?[\\d.ef]+)\\s*;");
         int index = 0;
 
         while ((index = source.indexOf("#define", index)) != -1)
@@ -159,6 +189,31 @@ public class ShaderCurves
                 ShaderVariable variable = new ShaderVariable(name, defaultValue, integer);
 
                 variables.putIfAbsent(variable.name, variable);
+            }
+
+            index = newLine;
+        }
+
+        index = 0;
+        while ((index = source.indexOf("const", index)) != -1)
+        {
+            int newLine = source.indexOf("\n", index);
+
+            if (newLine == -1)
+            {
+                newLine = source.length();
+            }
+
+            int lastNewLine = source.lastIndexOf('\n', index);
+            String define = source.substring(lastNewLine != -1 ? lastNewLine : index, newLine).trim();
+            Matcher matcher = constPattern.matcher(define);
+
+            if (matcher.find())
+            {
+                String rotation = matcher.group(1);
+                SUN_PATH_ROTATION_VARIABLE.defaultValue = Float.parseFloat(rotation);
+                
+                break;
             }
 
             index = newLine;
@@ -233,13 +288,17 @@ public class ShaderCurves
 
         while (!deconst.isEmpty())
         {
-            final Set<String> finalDeconst = deconst;
+            final Set<Pattern> finalDeconst = new HashSet<>();
+            for (String c : deconst)
+            {
+                finalDeconst.add(createVariableNamePattern(c));
+            }
 
             pair = removeConst(source, (s) ->
             {
-                for (String string : finalDeconst)
+                for (Pattern string : finalDeconst)
                 {
-                    if (s.contains(string)) return true;
+                    if (string.matcher(s).find()) return true;
                 }
 
                 return false;
@@ -249,6 +308,14 @@ public class ShaderCurves
         }
 
         return source;
+    }
+
+    private static Pattern createVariableNamePattern(String variableName)
+    {
+        String quoted = Pattern.quote(variableName);
+        String regex = "(?<![a-zA-Z0-9_$])" + quoted + "(?![a-zA-Z0-9_$])";
+
+        return Pattern.compile(regex);
     }
 
     private static Pair<String, Set<String>> removeConst(String source, Function<String, Boolean> function)

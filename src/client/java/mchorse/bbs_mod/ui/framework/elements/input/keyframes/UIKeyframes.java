@@ -77,6 +77,7 @@ public class UIKeyframes extends UIElement
     /* Fields */
 
     public final Area graphArea = new Area();
+    public final Area labelArea = new Area();
 
     private final UIKeyframeDopeSheet dopeSheet = new UIKeyframeDopeSheet(this);
     private IUIKeyframeGraph currentGraph = this.dopeSheet;
@@ -147,7 +148,7 @@ public class UIKeyframes extends UIElement
 
                     if (sheet != null && KeyframeFactories.isNumeric(sheet.channel.getFactory()))
                     {
-                        menu.action(Icons.EDIT, UIKeys.KEYFRAMES_CONTEXT_EDIT_TRACK.format(sheet.id), () -> this.editSheet(sheet));
+                        menu.action(Icons.EDIT, UIKeys.KEYFRAMES_CONTEXT_EDIT_TRACK.format(sheet.title), () -> this.editSheet(sheet));
                     }
                 }
             }
@@ -599,7 +600,7 @@ public class UIKeyframes extends UIElement
         return this.currentGraph != this.dopeSheet;
     }
 
-    public void editSheet(UIKeyframeSheet sheet)
+    public void editSheet(UIKeyframeSheet sheet) // TODO
     {
         if (sheet == null)
         {
@@ -610,7 +611,7 @@ public class UIKeyframes extends UIElement
             this.dopeSheet.clearSelection();
             this.dopeSheet.pickSelected();
 
-            if (sheet.channel.getFactory() instanceof Vector3fKeyframeFactory)
+            if (sheet.channel.getFactory() instanceof Vector3fKeyframeFactory) // Ignore for now
             {
                 this.currentGraph = new UIVector3KeyframeGraph(this, sheet);
             }
@@ -942,7 +943,7 @@ public class UIKeyframes extends UIElement
 
         if (Math.abs(max - min) > 0.01F)
         {
-            this.xAxis.viewOffset(min, max, this.area.w, 30);
+            this.xAxis.viewOffset(min, max, this.graphArea.w, 30);
         }
         else
         {
@@ -969,7 +970,7 @@ public class UIKeyframes extends UIElement
         double maxValue = this.xAxis.getMaxValue();
 
         int labelWidth = this.getLabelWidth();
-        boolean showLabelResizer = this.currentGraph == this.dopeSheet;
+        boolean showLabelResizer = true;//this.currentGraph == this.dopeSheet;
         this.labelResizer.setVisible(showLabelResizer);
         if (showLabelResizer)
         {
@@ -978,16 +979,18 @@ public class UIKeyframes extends UIElement
 
         super.resize();
 
-        if (showLabelResizer)
-        {
+        // if (this.currentGraph == this.dopeSheet)
+        // {
             this.graphArea.copy(this.area);
             this.graphArea.x += labelWidth;
             this.graphArea.w -= labelWidth;
-        }
-        else
-        {
-            this.graphArea.copy(this.area);
-        }
+            this.labelArea.copy(this.area);
+            this.labelArea.w = labelWidth;
+        // }
+        // else
+        // {
+        //     this.graphArea.copy(this.area);
+        // }
 
         this.currentGraph.resize();
 
@@ -1002,6 +1005,12 @@ public class UIKeyframes extends UIElement
     {
         if (this.currentGraph.mouseClicked(context))
         {
+            return true;
+        }
+        else if (this.currentGraph != this.dopeSheet && this.labelArea.isInside(context))
+        {
+            this.dopeSheet.mouseClicked(context);
+
             return true;
         }
 
@@ -1163,11 +1172,20 @@ public class UIKeyframes extends UIElement
             return true;
         }
 
-        if (this.area.isInside(context) && !this.navigating && !this.scaling)
+        if (!this.navigating && !this.scaling)
         {
-            this.currentGraph.mouseScrolled(context);
+            if (this.graphArea.isInside(context))
+            {
+                this.currentGraph.mouseScrolled(context);
 
-            return true;
+                return true;
+            }
+            else if (this.labelArea.isInside(context))
+            {
+                this.dopeSheet.mouseScrolled(context);
+
+                return true;
+            }
         }
 
         return super.subMouseScrolled(context);
@@ -1225,6 +1243,11 @@ public class UIKeyframes extends UIElement
 
         this.currentGraph.postRender(context);
 
+        if (this.currentGraph != this.dopeSheet)
+        {
+            this.dopeSheet.renderLabels(context, this.labelArea);
+        }
+
         context.batcher.unclip(context);
 
         /* Draw label resizer on top so it is not covered by the semi-transparent background */
@@ -1241,6 +1264,11 @@ public class UIKeyframes extends UIElement
     protected void handleMouse(UIContext context)
     {
         this.currentGraph.handleMouse(context, this.lastX, this.lastY);
+
+        if (this.currentGraph != this.dopeSheet)
+        {
+            this.dopeSheet.getYAxis().drag(context);
+        }
 
         int mouseX = context.mouseX;
         int mouseY = context.mouseY;

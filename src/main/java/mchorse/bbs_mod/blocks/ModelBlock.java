@@ -19,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -33,6 +34,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class ModelBlock extends Block implements BlockEntityProvider, Waterloggable
 {
+    public static final IntProperty LIGHT_LEVEL = IntProperty.of("light_level", 0, 15);
+
     public static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> validateTicker(BlockEntityType<A> givenType, BlockEntityType<E> expectedType, BlockEntityTicker<? super E> ticker)
     {
         return expectedType == givenType ? (BlockEntityTicker<A>) ticker : null;
@@ -43,13 +46,14 @@ public class ModelBlock extends Block implements BlockEntityProvider, Waterlogga
         super(settings);
 
         this.setDefaultState(getDefaultState()
-            .with(Properties.WATERLOGGED, false));
+            .with(Properties.WATERLOGGED, false)
+            .with(LIGHT_LEVEL, 0));
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
-        builder.add(Properties.WATERLOGGED);
+        builder.add(Properties.WATERLOGGED, LIGHT_LEVEL);
     }
 
     @Nullable

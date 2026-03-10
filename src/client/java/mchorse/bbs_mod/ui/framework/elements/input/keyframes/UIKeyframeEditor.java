@@ -72,7 +72,7 @@ public class UIKeyframeEditor extends UIElement
         return this.editPanelTopOffsetPx != null ? this.editPanelTopOffsetPx.get() : EDIT_PANEL_TOP_OFFSET_PX;
     }
 
-    private void pickKeyframe(Keyframe keyframe)
+    protected void pickKeyframe(Keyframe keyframe)
     {
         UIKeyframeFactory.saveScroll(this.editor);
 
