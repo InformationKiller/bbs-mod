@@ -2,11 +2,17 @@
     "schemaVersion": 1,
     "id": "bbs",
     "version": "${version}",
-    "name": "BBS FS mod",
-    "description": "A new generation of video production mod",
+    "name": "BBS NK mod",
+    "description": "A new generation of video production mod\nBased on BBS FS mod and BBS CML Edition\nModified for my best friend N. By K",
     "authors": [
         "McHorse",
-        "Wemppy"
+        "Wemppy",
+        "ElGatoPro300",
+        "seb0lla",
+        "Diobede",
+        "Fanyel",
+        "Mattux",
+        "K"
     ],
     "contributors": [
         "Chryfi (tracker clip)",
@@ -26,7 +32,8 @@
         "Rüyaperest (Turkish translations)",
         "Kirkus (Ukrainian translations)",
         "Eleeter (Urdu translations)",
-        "Diobede (Vietnamese translations)"
+        "Diobede (Vietnamese translations)",
+        "bay4lly.java (bug fixes)"
     ],
     "contact": {
         "homepage": "https://www.patreon.com/McHorse"
@@ -40,6 +47,9 @@
         ],
         "client": [
             "mchorse.bbs_mod.BBSModClient"
+        ],
+        "dynamiclights": [
+            "mchorse.bbs_mod.integration.LambDynLightsIntegration"
         ]
     },
     "mixins": [

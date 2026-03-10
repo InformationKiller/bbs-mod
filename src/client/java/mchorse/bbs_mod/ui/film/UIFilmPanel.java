@@ -511,7 +511,7 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
                 if (Window.isCtrlPressed() && !UIFilmPanel.this.isFlying() && UIFilmPanel.this.isCursorOverTimeline(context))
                 {
                     int magnitude = Window.isShiftPressed() ? BBSSettings.editorJump.get() : 1;
-                    int newCursor = UIFilmPanel.this.getCursor() + (int) Math.copySign(magnitude, context.mouseWheel);
+                    int newCursor = UIFilmPanel.this.getCursor() - (int) Math.copySign(magnitude, context.mouseWheel);
 
                     UIFilmPanel.this.setCursor(newCursor);
 
@@ -3134,6 +3134,7 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
     @Override
     public void setCursor(int value)
     {
+        this.setFlight(false);
         this.flightEditTime.mark();
         this.lastPosition.set(Position.ZERO);
 

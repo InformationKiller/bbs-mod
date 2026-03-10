@@ -1,9 +1,11 @@
 package mchorse.bbs_mod.ui.film.clips;
 
 import mchorse.bbs_mod.BBSModClient;
+import mchorse.bbs_mod.BBSSettings;
 import mchorse.bbs_mod.camera.clips.misc.CurveClip;
 import mchorse.bbs_mod.client.BBSRendering;
 import mchorse.bbs_mod.data.types.MapType;
+import mchorse.bbs_mod.l10n.L10n;
 import mchorse.bbs_mod.l10n.keys.IKey;
 import mchorse.bbs_mod.ui.Keys;
 import mchorse.bbs_mod.ui.UIKeys;
@@ -25,6 +27,7 @@ import mchorse.bbs_mod.utils.colors.Colors;
 import mchorse.bbs_mod.utils.iris.ShaderCurves;
 import mchorse.bbs_mod.utils.keyframes.KeyframeChannel;
 import mchorse.bbs_mod.utils.keyframes.factories.KeyframeFactories;
+import net.minecraft.client.resource.language.I18n;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +52,7 @@ public class UICurveClip extends UIClip<CurveClip>
 
         for (ShaderCurves.ShaderVariable value : ShaderCurves.variableMap.values())
         {
-            if (existing.contains(value.name))
+            if (existing.contains(value.name) || value.name.equals(ShaderCurves.SUN_PATH_ROTATION_CONST) || ShaderCurves.prohibitedVariablesCurrent.contains(value.name))
             {
                 continue;
             }
@@ -67,8 +70,10 @@ public class UICurveClip extends UIClip<CurveClip>
 
         if (!existing.contains(ShaderCurves.BRIGHTNESS)) list.add(new Label<>(UIKeys.CAMERA_PANELS_CURVES_BRIGHTNESS, ShaderCurves.BRIGHTNESS));
         if (!existing.contains(ShaderCurves.SUN_ROTATION)) list.add(new Label<>(UIKeys.CAMERA_PANELS_CURVES_SUN_ROTATION, ShaderCurves.SUN_ROTATION));
+        if (!existing.contains(ShaderCurves.SUN_PATH_ROTATION) && BBSSettings.shaderCurvesEnabled.get()) list.add(new Label<>(UIKeys.CAMERA_PANELS_CURVES_SUN_PATH_ROTATION, ShaderCurves.SUN_PATH_ROTATION));
         if (!existing.contains(ShaderCurves.WEATHER)) list.add(new Label<>(UIKeys.CAMERA_PANELS_CURVES_WEATHER, ShaderCurves.WEATHER));
         if (!existing.contains(CurveClip.CHROMA_SKY_COLOR)) list.add(new Label<>(UIKeys.CAMERA_PANELS_CURVES_CHROMA_SKY_COLOR, CurveClip.CHROMA_SKY_COLOR));
+        if (!existing.contains(ShaderCurves.CENTER_DEPTH)) list.add(new Label<>(UIKeys.CAMERA_PANELS_CURVES_CENTER_DEPTH, ShaderCurves.CENTER_DEPTH));
 
         UILabelListOverlayPanel panel = new UILabelListOverlayPanel(UIKeys.CAMERA_PANELS_PICK_KEY, list, callback);
 
@@ -139,9 +144,17 @@ public class UICurveClip extends UIClip<CurveClip>
 
     private void addKeyframeSheet(KeyframeChannel<?> channel)
     {
-        int sheetColor = channel.getId().hashCode() & Colors.RGB;
+        String id = channel.getId();
+        IKey title = L10n.lang("bbs.ui.camera.panels.curves." + id);
 
-        this.keyframes.view.addSheet(new UIKeyframeSheet(channel.getId(), IKey.constant(channel.getId()), sheetColor, false, channel, null));
+        if (id.startsWith(CurveClip.SHADER_CURVES_PREFIX))
+        {
+            String key = id.substring(CurveClip.SHADER_CURVES_PREFIX.length());
+            String langId = "option." + key;
+            title = IKey.constant(I18n.hasTranslation(langId) ? I18n.translate(langId) + " (" + key + ")" : key);
+        }
+
+        this.keyframes.view.addSheet(new UIKeyframeSheet(channel.getId(), title, channel.getId().hashCode() & Colors.RGB, false, channel, null));
     }
 
     @Override
@@ -186,5 +199,11 @@ public class UICurveClip extends UIClip<CurveClip>
         }
 
         super.collectUndoData(data);
+    }
+
+    @Override
+    public void handleDblClick()
+    {
+        this.edit.clickItself();
     }
 }

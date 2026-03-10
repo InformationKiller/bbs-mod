@@ -80,16 +80,17 @@ public class RunnerCameraController extends CameraWorkCameraController
     @Override
     public void setup(Camera camera, float transition)
     {
-        if (this.manual != null)
-        {
-            this.manual.apply(camera);
-        }
-        else if (this.context.clips != null)
+        if (this.context.clips != null)
         {
             /* kms */
             boolean free = this.panel.getController().getPovMode() == UIFilmController.CAMERA_MODE_FREE;
 
             this.apply(free ? null : camera, this.ticks, this.context.playing ? transition : 0F);
+        }
+
+        if (this.manual != null)
+        {
+            this.manual.apply(camera);
         }
 
         this.panel.getController().handleCamera(camera, transition);

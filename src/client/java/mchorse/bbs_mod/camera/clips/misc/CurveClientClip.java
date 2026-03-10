@@ -84,6 +84,10 @@ public class CurveClientClip extends CurveClip
                     variable.value = channel.interpolate(context.relativeTick + context.transition).floatValue();
                 }
             }
+            else if (id.equals(ShaderCurves.SUN_PATH_ROTATION))
+            {
+                ShaderCurves.SUN_PATH_ROTATION_VARIABLE.value = channel.interpolate(context.relativeTick + context.transition).floatValue();
+            }
         }
     }
 

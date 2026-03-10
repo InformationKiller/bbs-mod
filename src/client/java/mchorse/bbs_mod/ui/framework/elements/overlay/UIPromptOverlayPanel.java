@@ -22,7 +22,8 @@ public class UIPromptOverlayPanel extends UIMessageBarOverlayPanel
         super(title, message);
 
         this.callback = callback;
-        this.text = new UITextbox(null);
+        this.text = new UITextbox(s -> this.confirm());
+        this.text.delayedInput();
 
         this.bar.prepend(this.text);
     }

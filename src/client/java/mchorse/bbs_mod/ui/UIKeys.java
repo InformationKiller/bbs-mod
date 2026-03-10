@@ -95,8 +95,10 @@ public class UIKeys
     public static final IKey CAMERA_PANELS_COPY_ENTITY_TOOLTIP = L10n.lang("bbs.ui.camera.panels.copy_entity_tooltip");
     public static final IKey CAMERA_PANELS_CURVES_BRIGHTNESS = L10n.lang("bbs.ui.camera.panels.curves.brightness");
     public static final IKey CAMERA_PANELS_CURVES_SUN_ROTATION = L10n.lang("bbs.ui.camera.panels.curves.sun_rotation");
+    public static final IKey CAMERA_PANELS_CURVES_SUN_PATH_ROTATION = L10n.lang("bbs.ui.camera.panels.curves.sun_path_rotation");
     public static final IKey CAMERA_PANELS_CURVES_WEATHER = L10n.lang("bbs.ui.camera.panels.curves.weather");
     public static final IKey CAMERA_PANELS_CURVES_CHROMA_SKY_COLOR = L10n.lang("bbs.ui.camera.panels.curves.chroma_sky_color");
+    public static final IKey CAMERA_PANELS_CURVES_CENTER_DEPTH = L10n.lang("bbs.ui.camera.panels.curves.center_depth");
     public static final IKey CAMERA_PANELS_CURVE_ADD = L10n.lang("bbs.ui.camera.panels.curve.add");
     public static final IKey CAMERA_PANELS_CURVE_REMOVE = L10n.lang("bbs.ui.camera.panels.curve.remove");
     public static final IKey CAMERA_PANELS_DETERMINISTIC = L10n.lang("bbs.ui.camera.panels.deterministic");
@@ -1097,6 +1099,14 @@ public class UIKeys
     public static final IKey VIDEO_SETTINGS_SWAP = L10n.lang("bbs.ui.video_settings.swap");
     public static final IKey VIDEO_SETTINGS_WIDTH = L10n.lang("bbs.ui.video_settings.width");
     public static final IKey WORLD_KEYS_CYCLE_PANELS = L10n.lang("bbs.ui.world.keys.cycle_panels");
+
+    public static final IKey FORMS_EDITORS_STRUCTURE_TITLE = L10n.lang("bbs.ui.forms.editors.structure.title");
+    public static final IKey FORMS_EDITORS_STRUCTURE_PICK_STRUCTURE = L10n.lang("bbs.ui.forms.editors.structure.pick_structure");
+    public static final IKey FORMS_EDITORS_STRUCTURE_PICK_BIOME = L10n.lang("bbs.ui.forms.editors.structure.pick_biome");
+    public static final IKey FORMS_EDITORS_STRUCTURE_LIGHT = L10n.lang("bbs.ui.forms.editors.structure.light");
+    public static final IKey FORMS_EDITORS_STRUCTURE_LIGHT_INTENSITY_LABEL = L10n.lang("bbs.ui.forms.editors.structure.light_intensity");
+    public static final IKey IMPORTER_STRUCTURE_NBT = L10n.lang("bbs.ui.importer.structure");
+    public static final IKey MODEL_BLOCKS_LIGHT_LEVEL = L10n.lang("bbs.ui.model_blocks.light_level");
 
     /* Key collections */
     public static final KeyCollection C_CLIP = new KeyCollection("bbs.ui.camera.clips.^")

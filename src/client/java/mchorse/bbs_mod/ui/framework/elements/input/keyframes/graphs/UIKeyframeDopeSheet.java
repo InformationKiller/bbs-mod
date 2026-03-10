@@ -25,6 +25,7 @@ import mchorse.bbs_mod.utils.Pair;
 import mchorse.bbs_mod.utils.colors.Colors;
 import mchorse.bbs_mod.utils.keyframes.Keyframe;
 import mchorse.bbs_mod.utils.keyframes.KeyframeShape;
+import mchorse.bbs_mod.utils.keyframes.factories.KeyframeFactories;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.GameRenderer;
@@ -635,7 +636,10 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
                         return true;
                     }
 
-                    this.addKeyframe(sheet, this.keyframes.getTick(), null);
+                    if (KeyframeFactories.isNumeric(sheet.channel.getFactory()))
+                    {
+                        this.keyframes.editSheet(sheet);
+                    }
                     
                     return true;
                 }
@@ -662,7 +666,7 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
 
             this.keyframes.getXAxis().setShift(this.keyframes.getXAxis().getShift() - offsetX);
         }
-        else if (Window.isShiftPressed())
+        else if (Window.isShiftPressed() || context.mouseX <= this.keyframes.area.x + this.keyframes.getLabelWidth())
         {
             this.dopeSheet.mouseScroll(context);
         }
@@ -675,7 +679,7 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
             }
             else
             {
-                this.setTrackHeight(this.trackHeight - context.mouseWheel);
+                this.setTrackHeight(this.trackHeight + context.mouseWheel);
             }
         }
         else if (context.mouseWheel != 0D)
@@ -938,9 +942,8 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
         }
     }
 
-    private void renderLabels(UIContext context, BufferBuilder builder, Matrix4f matrix, List<UIKeyframeElement> elements, int offset, int y)
+    private void renderLabels(UIContext context, BufferBuilder builder, Matrix4f matrix, List<UIKeyframeElement> elements, int offset, int y, Area area)
     {
-        Area area = this.keyframes.area;
         int w = this.keyframes.getLabelWidth();
 
         /* Render background */
@@ -966,7 +969,7 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
 
             if (element instanceof UIKeyframeGroup group && !group.collapsed)
             {
-                this.renderLabels(context, builder, matrix, group.children, offset + 10, y);
+                this.renderLabels(context, builder, matrix, group.children, offset + 10, y, area);
 
                 y = this.getElementHeight(group) - (int) this.trackHeight + y;
             }
@@ -1025,7 +1028,7 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
         context.batcher.box(lx, y, lx + 2, y + (int) this.trackHeight, sheet.color | Colors.A100);
 
         FontRenderer font = context.batcher.getFont();
-        int textColor = hover ? Colors.WHITE : Colors.setA(Colors.WHITE, 0.75F);
+        int textColor = hover || KeyframeFactories.isNumeric(sheet.channel.getFactory()) ? Colors.WHITE : Colors.setA(Colors.WHITE, 0.75F);
         int textOffset = offset + this.getSheetIndent(sheet);
         context.batcher.textShadow(sheet.title.get(), lx + 5 + textOffset, my - font.getHeight() / 2, textColor);
 
@@ -1362,17 +1365,21 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
         }
     }
 
-    @Override
-    public void postRender(UIContext context)
+    public void renderLabels(UIContext context, Area area)
     {
         if (!this.elements.isEmpty())
         {
             BufferBuilder builder = Tessellator.getInstance().getBuffer();
             Matrix4f matrix = context.batcher.getContext().getMatrices().peek().getPositionMatrix();
 
-            this.renderLabels(context, builder, matrix, this.elements, 0, this.getDopeSheetY());
+            this.renderLabels(context, builder, matrix, this.elements, 0, this.getDopeSheetY(), area);
         }
+    }
 
+    @Override
+    public void postRender(UIContext context)
+    {
+        this.renderLabels(context, this.keyframes.area);
         this.dopeSheet.renderScrollbar(context.batcher);
     }
 

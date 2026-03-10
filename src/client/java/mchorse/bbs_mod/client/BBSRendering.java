@@ -1,5 +1,6 @@
 package mchorse.bbs_mod.client;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import mchorse.bbs_mod.BBSMod;
 import mchorse.bbs_mod.BBSModClient;
@@ -8,6 +9,7 @@ import mchorse.bbs_mod.blocks.entities.ModelBlockEntity;
 import mchorse.bbs_mod.camera.clips.misc.CurveClip;
 import mchorse.bbs_mod.camera.clips.misc.SubtitleClip;
 import mchorse.bbs_mod.camera.controller.CameraWorkCameraController;
+import mchorse.bbs_mod.camera.controller.ICameraController;
 import mchorse.bbs_mod.camera.controller.PlayCameraController;
 import mchorse.bbs_mod.events.ModelBlockEntityUpdateCallback;
 import mchorse.bbs_mod.forms.renderers.utils.RecolorVertexConsumer;
@@ -22,6 +24,7 @@ import mchorse.bbs_mod.ui.framework.UIScreen;
 import mchorse.bbs_mod.ui.framework.elements.utils.Batcher2D;
 import mchorse.bbs_mod.ui.utils.icons.Icons;
 import mchorse.bbs_mod.utils.VideoRecorder;
+import mchorse.bbs_mod.utils.clips.ClipContext;
 import mchorse.bbs_mod.utils.colors.Color;
 import mchorse.bbs_mod.utils.colors.Colors;
 import mchorse.bbs_mod.utils.iris.IrisUtils;
@@ -39,15 +42,25 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL12C;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL30C;
+import org.lwjgl.opengl.GL32C;
+import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
 import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -573,7 +586,7 @@ public class BBSRendering
 
             if (v != null)
             {
-                return (long) (v * 1000L);
+                return (long)(v / 360.0 * 24000.0 + 6000.0);
             }
         }
 
@@ -620,6 +633,82 @@ public class BBSRendering
         }
 
         return null;
+    }
+
+    private static Integer centerDepthFBO = null;
+    private static Integer centerDepthTexture = null;
+
+    public static Optional<Integer> getCenterDepthTexture()
+    {
+        if (!MinecraftClient.getInstance().isOnThread())
+        {
+            return null;
+        }
+
+        ICameraController iCameraController = BBSModClient.getCameraController().getCurrent();
+        if (iCameraController instanceof CameraWorkCameraController) {
+            CameraWorkCameraController controller = (CameraWorkCameraController) iCameraController;
+
+            Map<String, Double> values = CurveClip.getValues(controller.getContext());
+
+            if (values.containsKey(ShaderCurves.CENTER_DEPTH)) {
+                double near = 0.05D;
+                double far = MinecraftClient.getInstance().options.getClampedViewDistance() * 16.0;
+                double value = values.get(ShaderCurves.CENTER_DEPTH);
+                double depth = ((far + near) * value - 2.0D * near * far) / value / (far - near) * 0.5D + 0.5D;
+
+                if (centerDepthTexture == null) {
+                    centerDepthTexture = GlStateManager._genTexture();
+                    GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, centerDepthTexture);
+
+                    GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_NEAREST);
+                    GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_NEAREST);
+                    GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_S, GL12C.GL_CLAMP_TO_EDGE);
+                    GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_T, GL12C.GL_CLAMP_TO_EDGE);
+
+                    GL11C.glTexImage2D(GL11C.GL_TEXTURE_2D, 0, GL30C.GL_R32F, 1, 1, 0, GL11C.GL_RED, GL11C.GL_FLOAT, (ByteBuffer)null);
+
+                    GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, 0);
+                }
+
+                if (centerDepthFBO == null) {
+                    centerDepthFBO = GL30.glGenFramebuffers();
+
+                    int prevFbo = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+                    GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, centerDepthFBO);
+                    GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, centerDepthTexture, 0);
+                    GL20.glDrawBuffers(GL30.GL_COLOR_ATTACHMENT0);
+                    GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, prevFbo);
+                }
+
+                int prevFbo = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+                GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, centerDepthFBO);
+                GL11.glClearColor((float)depth, 0f, 0f, 0f);
+                GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+                GL11.glFinish();
+                GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, prevFbo);
+
+                return Optional.of(centerDepthTexture);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static float getSunPathRotation()
+    {
+        if (MinecraftClient.getInstance().isOnThread() && BBSModClient.getCameraController().getCurrent() instanceof CameraWorkCameraController controller)
+        {
+            Map<String, Double> values = CurveClip.getValues(controller.getContext());
+            Double v = values != null ? values.get(ShaderCurves.SUN_PATH_ROTATION) : null;
+
+            if (v != null)
+            {
+                return v.floatValue();
+            }
+        }
+
+        return ShaderCurves.SUN_PATH_ROTATION_VARIABLE.defaultValue;
     }
 
     public static Integer getChromaSkyColorArgb()

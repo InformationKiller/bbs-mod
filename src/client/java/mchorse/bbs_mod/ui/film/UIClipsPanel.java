@@ -352,4 +352,13 @@ public class UIClipsPanel extends UIElement implements IUIClipsDelegate
         data.putDouble("x_max", this.clips.scale.getMaxValue());
         data.putDouble("scroll", this.clips.vertical.getScroll());
     }
+
+    @Override
+    public void handleDblClick()
+    {
+        if (this.panel != null)
+        {
+            this.panel.handleDblClick();
+        }
+    }
 }
