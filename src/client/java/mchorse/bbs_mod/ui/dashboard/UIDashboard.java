@@ -43,9 +43,11 @@ import mchorse.bbs_mod.utils.colors.Colors;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.GameMode;
 
 import java.util.List;
 
@@ -64,6 +66,7 @@ public class UIDashboard extends UIBaseMenu
 
     private UISettingsOverlayPanel settingsPanel;
     private Perspective lastPerspective = Perspective.FIRST_PERSON;
+    private GameMode lastGameMode = null;
 
     private UIChalkboard chalkboard;
 
@@ -85,6 +88,8 @@ public class UIDashboard extends UIBaseMenu
             }
 
             this.copyCurrentEntityCamera();
+
+            this.updateGameMode(e.panel);
         });
         this.panels.full(this.viewport);
         this.registerPanels();
@@ -203,6 +208,7 @@ public class UIDashboard extends UIBaseMenu
         super.onOpen(oldMenu);
 
         this.lastPerspective = MinecraftClient.getInstance().options.getPerspective();
+        this.lastGameMode = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).getGameMode();
 
         MinecraftClient.getInstance().options.setPerspective(Perspective.FIRST_PERSON);
 
@@ -229,6 +235,11 @@ public class UIDashboard extends UIBaseMenu
         BBSModClient.getCameraController().remove(this.camera);
 
         MinecraftClient.getInstance().options.setPerspective(this.lastPerspective);
+        if (this.lastGameMode != null)
+        {
+            MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).setGameMode(this.lastGameMode);
+        }
+        this.lastGameMode = null;
     }
 
     @Override
@@ -268,6 +279,21 @@ public class UIDashboard extends UIBaseMenu
     public void setPanel(UIDashboardPanel panel)
     {
         this.panels.setPanel(panel);
+    }
+
+    private void updateGameMode(UIDashboardPanel panel)
+    {
+        if (panel instanceof UIFilmPanel)
+        {
+            if (this.lastGameMode != null)
+            {
+                MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).setGameMode(GameMode.SPECTATOR);
+            }
+        }
+        else
+        {
+            MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).setGameMode(this.lastGameMode);
+        }
     }
 
     @Override
