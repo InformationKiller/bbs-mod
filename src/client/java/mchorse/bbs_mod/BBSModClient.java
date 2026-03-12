@@ -1059,6 +1059,8 @@ public class BBSModClient implements ClientModInitializer
     {
         UIDashboard dashboard = getDashboard();
 
+        UIScreen.open(dashboard);
+
         if (dashboard.getPanels().panel instanceof UIFilmPanel panel && panel.getData() != null)
         {
             panel.showPanel(panel.replayEditor);
@@ -1067,8 +1069,6 @@ public class BBSModClient implements ClientModInitializer
         {
             dashboard.setPanel(dashboard.getPanel(UIFilmPanel.class));
         }
-
-        UIScreen.open(dashboard);
     }
 
     private void keyTeleport()
