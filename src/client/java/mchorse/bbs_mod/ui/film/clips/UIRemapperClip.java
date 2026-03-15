@@ -90,8 +90,10 @@ public class UIRemapperClip extends UIClip<RemapperClip>
     }
 
     @Override
-    public void handleDblClick()
+    public boolean handleDblClick()
     {
         this.edit.clickItself();
+
+        return true;
     }
 }

@@ -38,7 +38,7 @@ public interface IUIClipsDelegate extends ICursor
 
     public void embedView(UIElement element);
 
-    public void handleDblClick();
+    public boolean handleDblClick();
 
     /* Undo/redo */
 

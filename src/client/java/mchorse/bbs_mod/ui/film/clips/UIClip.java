@@ -263,8 +263,9 @@ public abstract class UIClip <T extends Clip> extends UIElement
         }
     }
 
-    public void handleDblClick()
+    public boolean handleDblClick()
     {
+        return false;
     }
 
     public static interface IUIClipFactory <T extends Clip>

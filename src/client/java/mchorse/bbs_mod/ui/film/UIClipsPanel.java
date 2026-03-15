@@ -354,11 +354,13 @@ public class UIClipsPanel extends UIElement implements IUIClipsDelegate
     }
 
     @Override
-    public void handleDblClick()
+    public boolean handleDblClick()
     {
         if (this.panel != null)
         {
-            this.panel.handleDblClick();
+            return this.panel.handleDblClick();
         }
+
+        return false;
     }
 }

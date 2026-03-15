@@ -202,8 +202,10 @@ public class UICurveClip extends UIClip<CurveClip>
     }
 
     @Override
-    public void handleDblClick()
+    public boolean handleDblClick()
     {
         this.edit.clickItself();
+
+        return true;
     }
 }
