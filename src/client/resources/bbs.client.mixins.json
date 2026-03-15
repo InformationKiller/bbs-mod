@@ -40,6 +40,7 @@
         "iris.CelestialUniformsMixin",
         "iris.IrisRenderingPipelineMixin",
         "iris.ShadowRendererMixin",
+        "iris.RenderTargetsAccessor",
         "SimpleOptionMixin",
         "BlockEntityRenderDispatcherMixin",
         "WorldMixin",

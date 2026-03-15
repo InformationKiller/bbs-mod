@@ -4,6 +4,8 @@ import joptsimple.internal.Strings;
 import mchorse.bbs_mod.BBSModClient;
 import mchorse.bbs_mod.graphics.texture.Texture;
 import mchorse.bbs_mod.graphics.texture.TextureManager;
+import mchorse.bbs_mod.mixin.client.iris.IrisRenderingPipelineAccessor;
+import mchorse.bbs_mod.mixin.client.iris.RenderTargetsAccessor;
 import mchorse.bbs_mod.resources.Link;
 import mchorse.bbs_mod.utils.CollectionUtils;
 import mchorse.bbs_mod.utils.DataPath;
@@ -248,6 +250,17 @@ public class IrisUtils
             else
             {
                 list.add(new FloatCachedUniform(value.uniformName, UniformUpdateFrequency.PER_FRAME, value::getValue));
+            }
+        }
+    }
+
+    public static void resetDepthVersion()
+    {
+        if (Iris.getPipelineManager().getPipelineNullable() instanceof IrisRenderingPipelineAccessor pipeline)
+        {
+            if (pipeline.bbs$renderTargets() instanceof RenderTargetsAccessor renderTargets)
+            {
+                renderTargets.bbs$setCachedDepthBufferVersion(-1);
             }
         }
     }

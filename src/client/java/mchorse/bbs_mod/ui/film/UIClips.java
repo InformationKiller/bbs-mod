@@ -1203,9 +1203,11 @@ public class UIClips extends UIElement
                 }
                 else if (!shift && context.mouseX == this.lastX && context.mouseY == this.lastY && System.currentTimeMillis() - this.lastClick < 500)
                 {
-                    this.clearSelection();
-                    this.delegate.handleDblClick();
-                    return true;
+                    if (this.delegate.handleDblClick())
+                    {
+                        this.setSelected(clip);
+                        return true;
+                    }
                 }
 
                 this.grabMode = this.getClipHandle(clip, context, this.getLayerHeight());
@@ -1480,7 +1482,7 @@ public class UIClips extends UIElement
         }
         else if (this.grabbing)
         {
-            if (this.canGrab)
+            if (this.canGrab && this.grabbedData.size() > 0)
             {
                 this.dragClips(mouseX, mouseY);
 

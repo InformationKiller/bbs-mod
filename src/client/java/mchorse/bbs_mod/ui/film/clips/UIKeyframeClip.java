@@ -151,8 +151,10 @@ public class UIKeyframeClip extends UIClip<KeyframeClip>
     }
 
     @Override
-    public void handleDblClick()
+    public boolean handleDblClick()
     {
         this.edit.clickItself();
+
+        return true;
     }
 }

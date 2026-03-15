@@ -182,6 +182,11 @@ public class BBSRendering
         {
             resizeExtraFramebuffers();
         }
+
+        if (iris)
+        {
+            IrisUtils.resetDepthVersion();
+        }
     }
 
     public static Texture getTexture()
