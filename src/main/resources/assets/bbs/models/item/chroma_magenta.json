@@ -1,4 +1,3 @@
 {
-    "parent": "bbs:block/chroma_magenta",
-    "gui_light": "front"
+    "parent": "bbs:block/chroma_magenta"
 }

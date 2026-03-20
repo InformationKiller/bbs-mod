@@ -186,6 +186,14 @@ public class BBSMod implements ModInitializer
     public static final Block CHROMA_YELLOW_BLOCK = createChromaBlock();
     public static final Block CHROMA_BLACK_BLOCK = createChromaBlock();
     public static final Block CHROMA_WHITE_BLOCK = createChromaBlock();
+    public static final Block EMISSIVE_CHROMA_RED_BLOCK = createEmissiveChromaBlock();
+    public static final Block EMISSIVE_CHROMA_GREEN_BLOCK = createEmissiveChromaBlock();
+    public static final Block EMISSIVE_CHROMA_BLUE_BLOCK = createEmissiveChromaBlock();
+    public static final Block EMISSIVE_CHROMA_CYAN_BLOCK = createEmissiveChromaBlock();
+    public static final Block EMISSIVE_CHROMA_MAGENTA_BLOCK = createEmissiveChromaBlock();
+    public static final Block EMISSIVE_CHROMA_YELLOW_BLOCK = createEmissiveChromaBlock();
+    public static final Block EMISSIVE_CHROMA_BLACK_BLOCK = createEmissiveChromaBlock();
+    public static final Block EMISSIVE_CHROMA_WHITE_BLOCK = createEmissiveChromaBlock();
 
     public static final BlockItem MODEL_BLOCK_ITEM = new BlockItem(MODEL_BLOCK, new Item.Settings());
     public static final GunItem GUN_ITEM = new GunItem(new Item.Settings().maxCount(1));
@@ -197,6 +205,14 @@ public class BBSMod implements ModInitializer
     public static final BlockItem CHROMA_YELLOW_BLOCK_ITEM = new BlockItem(CHROMA_YELLOW_BLOCK, new Item.Settings());
     public static final BlockItem CHROMA_BLACK_BLOCK_ITEM = new BlockItem(CHROMA_BLACK_BLOCK, new Item.Settings());
     public static final BlockItem CHROMA_WHITE_BLOCK_ITEM = new BlockItem(CHROMA_WHITE_BLOCK, new Item.Settings());
+    public static final BlockItem EMISSIVE_CHROMA_RED_BLOCK_ITEM = new BlockItem(EMISSIVE_CHROMA_RED_BLOCK, new Item.Settings());
+    public static final BlockItem EMISSIVE_CHROMA_GREEN_BLOCK_ITEM = new BlockItem(EMISSIVE_CHROMA_GREEN_BLOCK, new Item.Settings());
+    public static final BlockItem EMISSIVE_CHROMA_BLUE_BLOCK_ITEM = new BlockItem(EMISSIVE_CHROMA_BLUE_BLOCK, new Item.Settings());
+    public static final BlockItem EMISSIVE_CHROMA_CYAN_BLOCK_ITEM = new BlockItem(EMISSIVE_CHROMA_CYAN_BLOCK, new Item.Settings());
+    public static final BlockItem EMISSIVE_CHROMA_MAGENTA_BLOCK_ITEM = new BlockItem(EMISSIVE_CHROMA_MAGENTA_BLOCK, new Item.Settings());
+    public static final BlockItem EMISSIVE_CHROMA_YELLOW_BLOCK_ITEM = new BlockItem(EMISSIVE_CHROMA_YELLOW_BLOCK, new Item.Settings());
+    public static final BlockItem EMISSIVE_CHROMA_BLACK_BLOCK_ITEM = new BlockItem(EMISSIVE_CHROMA_BLACK_BLOCK, new Item.Settings());
+    public static final BlockItem EMISSIVE_CHROMA_WHITE_BLOCK_ITEM = new BlockItem(EMISSIVE_CHROMA_WHITE_BLOCK, new Item.Settings());
 
     public static final GameRules.Key<GameRules.BooleanRule> BBS_EDITING_RULE = GameRuleRegistry.register("bbsEditing", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
@@ -212,6 +228,15 @@ public class BBSMod implements ModInitializer
         .entries((context, entries) ->
         {
             entries.add(createModelBlockStack(Link.assets("textures/model_block.png")));
+            entries.add(EMISSIVE_CHROMA_RED_BLOCK_ITEM);
+            entries.add(EMISSIVE_CHROMA_GREEN_BLOCK_ITEM);
+            entries.add(EMISSIVE_CHROMA_BLUE_BLOCK_ITEM);
+            entries.add(EMISSIVE_CHROMA_CYAN_BLOCK_ITEM);
+            entries.add(EMISSIVE_CHROMA_MAGENTA_BLOCK_ITEM);
+            entries.add(EMISSIVE_CHROMA_YELLOW_BLOCK_ITEM);
+            entries.add(EMISSIVE_CHROMA_BLACK_BLOCK_ITEM);
+            entries.add(EMISSIVE_CHROMA_WHITE_BLOCK_ITEM);
+            entries.add(new ItemStack(GUN_ITEM));
             entries.add(CHROMA_RED_BLOCK_ITEM);
             entries.add(CHROMA_GREEN_BLOCK_ITEM);
             entries.add(CHROMA_BLUE_BLOCK_ITEM);
@@ -220,7 +245,6 @@ public class BBSMod implements ModInitializer
             entries.add(CHROMA_YELLOW_BLOCK_ITEM);
             entries.add(CHROMA_BLACK_BLOCK_ITEM);
             entries.add(CHROMA_WHITE_BLOCK_ITEM);
-            entries.add(new ItemStack(GUN_ITEM));
         })
         .build();
 
@@ -242,6 +266,17 @@ public class BBSMod implements ModInitializer
             .dropsNothing()
             .requiresTool()
             .strength(-1F, 3600000F));
+    }
+
+    private static Block createEmissiveChromaBlock()
+    {
+        return new Block(FabricBlockSettings.create()
+            .noBlockBreakParticles()
+            .dropsNothing()
+            .requiresTool()
+            .strength(-1F, 3600000F)
+            .emissiveLighting((state, block, world) -> true));
+            
     }
 
     private static ItemStack createModelBlockStack(Link texture)
@@ -495,6 +530,14 @@ public class BBSMod implements ModInitializer
         Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "chroma_yellow"), CHROMA_YELLOW_BLOCK);
         Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "chroma_black"), CHROMA_BLACK_BLOCK);
         Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "chroma_white"), CHROMA_WHITE_BLOCK);
+        Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "emissive_chroma_red"), EMISSIVE_CHROMA_RED_BLOCK);
+        Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "emissive_chroma_green"), EMISSIVE_CHROMA_GREEN_BLOCK);
+        Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "emissive_chroma_blue"), EMISSIVE_CHROMA_BLUE_BLOCK);
+        Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "emissive_chroma_cyan"), EMISSIVE_CHROMA_CYAN_BLOCK);
+        Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "emissive_chroma_magenta"), EMISSIVE_CHROMA_MAGENTA_BLOCK);
+        Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "emissive_chroma_yellow"), EMISSIVE_CHROMA_YELLOW_BLOCK);
+        Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "emissive_chroma_black"), EMISSIVE_CHROMA_BLACK_BLOCK);
+        Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "emissive_chroma_white"), EMISSIVE_CHROMA_WHITE_BLOCK);
 
         Registry.register(Registries.ITEM, new Identifier(MOD_ID, "model"), MODEL_BLOCK_ITEM);
         Registry.register(Registries.ITEM, new Identifier(MOD_ID, "gun"), GUN_ITEM);
@@ -506,6 +549,14 @@ public class BBSMod implements ModInitializer
         Registry.register(Registries.ITEM, new Identifier(MOD_ID, "chroma_yellow"), CHROMA_YELLOW_BLOCK_ITEM);
         Registry.register(Registries.ITEM, new Identifier(MOD_ID, "chroma_black"), CHROMA_BLACK_BLOCK_ITEM);
         Registry.register(Registries.ITEM, new Identifier(MOD_ID, "chroma_white"), CHROMA_WHITE_BLOCK_ITEM);
+        Registry.register(Registries.ITEM, new Identifier(MOD_ID, "emissive_chroma_red"), EMISSIVE_CHROMA_RED_BLOCK_ITEM);
+        Registry.register(Registries.ITEM, new Identifier(MOD_ID, "emissive_chroma_green"), EMISSIVE_CHROMA_GREEN_BLOCK_ITEM);
+        Registry.register(Registries.ITEM, new Identifier(MOD_ID, "emissive_chroma_blue"), EMISSIVE_CHROMA_BLUE_BLOCK_ITEM);
+        Registry.register(Registries.ITEM, new Identifier(MOD_ID, "emissive_chroma_cyan"), EMISSIVE_CHROMA_CYAN_BLOCK_ITEM);
+        Registry.register(Registries.ITEM, new Identifier(MOD_ID, "emissive_chroma_magenta"), EMISSIVE_CHROMA_MAGENTA_BLOCK_ITEM);
+        Registry.register(Registries.ITEM, new Identifier(MOD_ID, "emissive_chroma_yellow"), EMISSIVE_CHROMA_YELLOW_BLOCK_ITEM);
+        Registry.register(Registries.ITEM, new Identifier(MOD_ID, "emissive_chroma_black"), EMISSIVE_CHROMA_BLACK_BLOCK_ITEM);
+        Registry.register(Registries.ITEM, new Identifier(MOD_ID, "emissive_chroma_white"), EMISSIVE_CHROMA_WHITE_BLOCK_ITEM);
 
         Registry.register(Registries.ITEM_GROUP, new Identifier(MOD_ID, "main"), ITEM_GROUP);
     }
