@@ -1,5 +1,13 @@
 {
     "block.bbs.model": "Model block",
+    "block.bbs.emissive_chroma_red": "Emissive Red chroma",
+    "block.bbs.emissive_chroma_green": "Emissive Green chroma",
+    "block.bbs.emissive_chroma_blue": "Emissive Blue chroma",
+    "block.bbs.emissive_chroma_cyan": "Emissive Cyan chroma",
+    "block.bbs.emissive_chroma_magenta": "Emissive Magenta chroma",
+    "block.bbs.emissive_chroma_yellow": "Emissive Yellow chroma",
+    "block.bbs.emissive_chroma_black": "Emissive Black chroma",
+    "block.bbs.emissive_chroma_white": "Emissive White chroma",
     "block.bbs.chroma_red": "Red chroma",
     "block.bbs.chroma_green": "Green chroma",
     "block.bbs.chroma_blue": "Blue chroma",
