@@ -1614,6 +1614,7 @@ public class UIClips extends UIElement
             if (dir % 2 == 1 && dy != 0) dy -= Integer.signum(dy);
 
             dir += 1;
+            if (dx == 0 && dy == 0) break; // Fix Crash
         }
 
         return new int[]{dx, dy};

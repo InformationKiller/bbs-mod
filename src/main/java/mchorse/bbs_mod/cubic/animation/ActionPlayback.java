@@ -19,6 +19,8 @@ public class ActionPlayback
     public boolean playing = true;
     public int priority;
 
+    public ActionPlayback last;
+
     public ActionPlayback(Animation action, ActionConfig config, boolean looping)
     {
         this.action = action;
@@ -34,6 +36,11 @@ public class ActionPlayback
         this.priority = priority;
     }
 
+    private ActionPlayback()
+    {
+
+    }
+
     /* Action playback control methods */
 
     /**
@@ -46,7 +53,7 @@ public class ActionPlayback
             this.ticks = Math.copySign(1, this.speed) < 0 ? this.duration : 0;
         }
 
-        this.stopFade();
+        this.resetFade();
     }
 
     /**
@@ -87,25 +94,22 @@ public class ActionPlayback
     /**
      * Start fading in
      */
-    public void fadeIn()
+    public void fadeIn(ActionPlayback last)
     {
         this.fade = (int) this.config.fade;
         this.fading = Fade.IN;
+        this.last = last;
     }
 
     /**
      * Reset fading
      */
-    public void stopFade()
-    {
-        this.fade = 0;
-        this.fading = Fade.FINISHED;
-    }
-
     public void resetFade()
     {
         this.fade = 0;
         this.fading = Fade.FINISHED;
+        
+        this.last = null;
     }
 
     public int getFade()
@@ -138,9 +142,21 @@ public class ActionPlayback
 
     public void update()
     {
-        if (this.fading != Fade.FINISHED && this.fade > 0)
+        if (this.last != null)
         {
-            this.fade--;
+            this.last.update();
+        }
+
+        if (this.fading != Fade.FINISHED)
+        {
+            if (this.fade > 0)
+            {
+                this.fade--;
+            }
+            else
+            {
+                this.last = null;
+            }
         }
 
         if (!this.playing) return;
@@ -202,6 +218,12 @@ public class ActionPlayback
 
     public void apply(IEntity target, IModel armature, float transition, float blend, boolean skipInitial)
     {
+        if (this.last != null)
+        {
+            float fade = this.last.isFading() ? this.last.getFadeFactor(transition) : 1F;
+            this.last.apply(target, armature, transition, fade, false);
+        }
+
         float tick = this.getTick(transition);
 
         armature.apply(target, this.action, tick, blend, transition, skipInitial);
@@ -212,6 +234,25 @@ public class ActionPlayback
         float tick = this.getTick(transition);
 
         armature.postApply(target, this.action, tick, transition);
+    }
+
+    public ActionPlayback clone()
+    {
+        ActionPlayback clone = new ActionPlayback();
+
+        clone.action = this.action;
+        clone.config = this.config;
+        clone.fade = this.fade;
+        clone.ticks = this.ticks;
+        clone.duration = this.duration;
+        clone.speed = this.speed;
+        clone.looping = this.looping;
+        clone.fading = this.fading;
+        clone.playing = this.playing;
+        clone.priority = this.priority;
+        clone.last = this.last;
+
+        return clone;
     }
 
     public static enum Fade
