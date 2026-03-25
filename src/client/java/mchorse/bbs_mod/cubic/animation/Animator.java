@@ -4,6 +4,9 @@ import mchorse.bbs_mod.cubic.IModelInstance;
 import mchorse.bbs_mod.cubic.data.animation.Animation;
 import mchorse.bbs_mod.cubic.data.animation.Animations;
 import mchorse.bbs_mod.forms.entities.IEntity;
+import mchorse.bbs_mod.forms.entities.MCEntity;
+import mchorse.bbs_mod.mixin.client.ClientPlayerEntityAccessor;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -41,7 +44,6 @@ public class Animator implements IAnimator
 
     /* Action pipeline properties */
     public ActionPlayback active;
-    public ActionPlayback lastActive;
     public List<ActionPlayback> actions = new ArrayList<>();
 
     public double prevX = Float.MAX_VALUE;
@@ -174,11 +176,6 @@ public class Animator implements IAnimator
             this.active.update();
         }
 
-        if (this.lastActive != null)
-        {
-            this.lastActive.update();
-        }
-
         /* Update secondary actions */
         Iterator<ActionPlayback> it = this.actions.iterator();
 
@@ -190,7 +187,7 @@ public class Animator implements IAnimator
 
             if (action.finishedFading() && action.isFadingModeOut())
             {
-                action.stopFade();
+                action.resetFade();
                 it.remove();
             }
         }
@@ -208,6 +205,11 @@ public class Animator implements IAnimator
         double dz = target.getZ() - this.prevZ;
         final float threshold = 0.01F;
         boolean moves = Math.abs(dx) > threshold || Math.abs(dz) > threshold;
+
+        if (target instanceof MCEntity mc && mc.getMcEntity() instanceof ClientPlayerEntity player)
+        {
+            moves = player.input.pressingBack || player.input.pressingForward || player.input.pressingLeft || player.input.pressingRight;
+        }
 
         /* if (target.getHealth() <= 0)
         {
@@ -313,14 +315,11 @@ public class Animator implements IAnimator
             return;
         }
 
-        if (this.active != null)
-        {
-            this.lastActive = this.active;
-        }
+        ActionPlayback lastActive = this.active != null ? this.active.clone() : null;
 
         this.active = action;
         this.active.rewind();
-        this.active.fadeIn();
+        this.active.fadeIn(lastActive);
     }
 
     public void addAction(ActionPlayback action)
@@ -349,7 +348,7 @@ public class Animator implements IAnimator
         }
 
         action.rewind();
-        action.fadeIn();
+        action.fadeIn(null);
         this.actions.add(action);
     }
 
@@ -362,11 +361,6 @@ public class Animator implements IAnimator
         if (this.basePre != null)
         {
             this.basePre.apply(target, armature.getModel(), transition, 1F, false);
-        }
-
-        if (this.lastActive != null && this.active.isFading())
-        {
-            this.lastActive.apply(target, armature.getModel(), transition, 1F, false);
         }
 
         if (this.active != null)
