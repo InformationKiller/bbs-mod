@@ -55,15 +55,15 @@ public class CubicModelAnimator
         return segment.b.getInterpolation().interpolate(IInterp.context.set(pre, start, destination, post, segment.x));
     }
 
-    public static void animate(Model model, Animation animation, float frame, float blend, boolean skipInitial)
+    public static void animate(Model model, Animation animation, float frame, float blend, boolean skipInitial, boolean raw)
     {
         for (ModelGroup group : model.topGroups)
         {
-            animateGroup(group, animation, frame, blend, skipInitial);
+            animateGroup(group, animation, frame, blend, skipInitial, raw);
         }
     }
 
-    private static void animateGroup(ModelGroup group, Animation animation, float frame, float blend, boolean skipInitial)
+    private static void animateGroup(ModelGroup group, Animation animation, float frame, float blend, boolean skipInitial, boolean raw)
     {
         boolean applied = false;
 
@@ -71,7 +71,7 @@ public class CubicModelAnimator
 
         if (part != null)
         {
-            applyGroupAnimation(group, part, frame, blend);
+            applyGroupAnimation(group, part, frame, blend, raw);
 
             applied = true;
         }
@@ -81,21 +81,30 @@ public class CubicModelAnimator
             Transform initial = group.initial;
             Transform current = group.current;
 
-            current.translate.lerp(initial.translate, blend);
-            current.scale.lerp(initial.scale, blend);
+            if (raw)
+            {
+                current.translate.set(initial.translate);
+                current.scale.set(initial.scale);
+                current.rotate.set(initial.rotate);
+            }
+            else
+            {
+                current.translate.lerp(initial.translate, blend);
+                current.scale.lerp(initial.scale, blend);
 
-            current.rotate.x = (float) Lerps.lerpYaw(current.rotate.x, initial.rotate.x, blend);
-            current.rotate.y = (float) Lerps.lerpYaw(current.rotate.y, initial.rotate.y, blend);
-            current.rotate.z = (float) Lerps.lerpYaw(current.rotate.z, initial.rotate.z, blend);
+                current.rotate.x = (float) Lerps.lerpYaw(current.rotate.x, initial.rotate.x, blend);
+                current.rotate.y = (float) Lerps.lerpYaw(current.rotate.y, initial.rotate.y, blend);
+                current.rotate.z = (float) Lerps.lerpYaw(current.rotate.z, initial.rotate.z, blend);
+            }
         }
 
         for (ModelGroup childGroup : group.children)
         {
-            animateGroup(childGroup, animation, frame, blend, skipInitial);
+            animateGroup(childGroup, animation, frame, blend, skipInitial, raw);
         }
     }
 
-    private static void applyGroupAnimation(ModelGroup group, AnimationPart animation, float frame, float blend)
+    private static void applyGroupAnimation(ModelGroup group, AnimationPart animation, float frame, float blend, boolean raw)
     {
         Vector3d position = interpolateList(p, animation.x, animation.y, animation.z, frame, 0D);
         Vector3d scale = interpolateList(s, animation.sx, animation.sy, animation.sz, frame, 1D);
@@ -109,17 +118,34 @@ public class CubicModelAnimator
         Transform initial = group.initial;
         Transform current = group.current;
 
-        current.translate.x = Lerps.lerp(current.translate.x, (float) position.x + initial.translate.x, blend);
-        current.translate.y = Lerps.lerp(current.translate.y, (float) position.y + initial.translate.y, blend);
-        current.translate.z = Lerps.lerp(current.translate.z, (float) position.z + initial.translate.z, blend);
+        if (raw)
+        {
+            current.translate.x = (float) position.x + initial.translate.x;
+            current.translate.y = (float) position.y + initial.translate.y;
+            current.translate.z = (float) position.z + initial.translate.z;
 
-        current.scale.x = Lerps.lerp(current.scale.x, (float) scale.x + initial.scale.x, blend);
-        current.scale.y = Lerps.lerp(current.scale.y, (float) scale.y + initial.scale.y, blend);
-        current.scale.z = Lerps.lerp(current.scale.z, (float) scale.z + initial.scale.z, blend);
+            current.scale.x = (float) scale.x + initial.scale.x;
+            current.scale.y = (float) scale.y + initial.scale.y;
+            current.scale.z = (float) scale.z + initial.scale.z;
 
-        current.rotate.x = (float) Lerps.lerpYaw(current.rotate.x, (float) rotation.x + initial.rotate.x, blend);
-        current.rotate.y = (float) Lerps.lerpYaw(current.rotate.y, (float) rotation.y + initial.rotate.y, blend);
-        current.rotate.z = (float) Lerps.lerpYaw(current.rotate.z, (float) rotation.z + initial.rotate.z, blend);
+            current.rotate.x = (float) rotation.x + initial.rotate.x;
+            current.rotate.y = (float) rotation.y + initial.rotate.y;
+            current.rotate.z = (float) rotation.z + initial.rotate.z;
+        }
+        else
+        {
+            current.translate.x = Lerps.lerp(current.translate.x, (float) position.x + initial.translate.x, blend);
+            current.translate.y = Lerps.lerp(current.translate.y, (float) position.y + initial.translate.y, blend);
+            current.translate.z = Lerps.lerp(current.translate.z, (float) position.z + initial.translate.z, blend);
+
+            current.scale.x = Lerps.lerp(current.scale.x, (float) scale.x + initial.scale.x, blend);
+            current.scale.y = Lerps.lerp(current.scale.y, (float) scale.y + initial.scale.y, blend);
+            current.scale.z = Lerps.lerp(current.scale.z, (float) scale.z + initial.scale.z, blend);
+
+            current.rotate.x = (float) Lerps.lerpYaw(current.rotate.x, (float) rotation.x + initial.rotate.x, blend);
+            current.rotate.y = (float) Lerps.lerpYaw(current.rotate.y, (float) rotation.y + initial.rotate.y, blend);
+            current.rotate.z = (float) Lerps.lerpYaw(current.rotate.z, (float) rotation.z + initial.rotate.z, blend);
+        }
     }
 
     public static void postAnimate(Model model, Animation animation, float tick)

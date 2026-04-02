@@ -22,8 +22,9 @@ public class CelestialUniformsMixin
         method = "getCelestialPositionInWorldSpace",
         at = @At(
             value = "FIELD",
-            target = "Lnet/irisshaders/iris/uniforms/CelestialUniforms;sunPathRotation:F"
-        )
+            target = "sunPathRotation"
+        ),
+        remap = false
     )
     private float redirectSunPathRotationWorld(CelestialUniforms instance)
     {
@@ -34,8 +35,9 @@ public class CelestialUniformsMixin
         method = "getCelestialPosition",
         at = @At(
             value = "FIELD",
-            target = "Lnet/irisshaders/iris/uniforms/CelestialUniforms;sunPathRotation:F"
-        )
+            target = "sunPathRotation"
+        ),
+        remap = false
     )
     private float redirectSunPathRotation(CelestialUniforms instance)
     {
