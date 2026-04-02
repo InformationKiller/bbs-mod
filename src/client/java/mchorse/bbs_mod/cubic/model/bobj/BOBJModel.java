@@ -247,7 +247,14 @@ public class BOBJModel implements IModel
     public void apply(IEntity target, Animation action, float tick, float blend, float transition, boolean skipInitial)
     {
         MolangHelper.setMolangVariables(action.parser, target, tick, transition);
-        BOBJModelAnimator.animate(this, action, tick, blend, skipInitial);
+        BOBJModelAnimator.animate(this, action, tick, blend, skipInitial, false);
+    }
+
+    @Override
+    public void applyRaw(Animation action, float tick, float transition, boolean skipInitial)
+    {
+        MolangHelper.setMolangVariables(action.parser, null, tick, transition);
+        BOBJModelAnimator.animate(this, action, tick, 1F, skipInitial, true);
     }
 
     @Override

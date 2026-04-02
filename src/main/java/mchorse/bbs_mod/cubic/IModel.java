@@ -4,7 +4,9 @@ import mchorse.bbs_mod.bobj.BOBJBone;
 import mchorse.bbs_mod.cubic.data.animation.Animation;
 import mchorse.bbs_mod.cubic.data.model.ModelGroup;
 import mchorse.bbs_mod.forms.entities.IEntity;
+import mchorse.bbs_mod.utils.keyframes.Keyframe;
 import mchorse.bbs_mod.utils.pose.Pose;
+import mchorse.bbs_mod.utils.pose.PoseTransform;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,4 +67,6 @@ public interface IModel
     public void apply(IEntity target, Animation action, float tick, float blend, float transition, boolean skipInitial);
 
     public void postApply(IEntity target, Animation action, float tick, float transition);
+
+    public void applyRaw(Animation action, float tick, float transition, boolean skipInitial);
 }
