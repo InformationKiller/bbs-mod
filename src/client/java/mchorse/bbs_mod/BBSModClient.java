@@ -1024,6 +1024,11 @@ public class BBSModClient implements ClientModInitializer
 
     private void keyRecordReplay()
     {
+        if (getDashboardIfCreated() == null)
+        {
+            return;
+        }
+
         UIDashboard dashboard = getDashboard();
         UIFilmPanel panel = dashboard.getPanel(UIFilmPanel.class);
 

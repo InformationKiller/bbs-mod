@@ -68,5 +68,5 @@ public interface IModel
 
     public void postApply(IEntity target, Animation action, float tick, float transition);
 
-    public void applyRaw(Animation action, float tick, float transition, boolean skipInitial);
+    public void applyRaw(IEntity target, Animation action, float tick, float transition, boolean skipInitial);
 }
