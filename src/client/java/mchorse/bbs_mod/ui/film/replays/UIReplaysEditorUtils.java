@@ -809,7 +809,7 @@ public class UIReplaysEditorUtils
     private static void fillAnimationPose(UIKeyframeSheet sheet, float i, ModelInstance model, IEntity entity, Animation animation, int current)
     {
         model.model.resetPose();
-        model.model.applyRaw(animation, i, 0F, false);
+        model.model.applyRaw(entity, animation, i, 0F, false);
 
         int insert = sheet.channel.insert(current + i, model.model.createPose());
 

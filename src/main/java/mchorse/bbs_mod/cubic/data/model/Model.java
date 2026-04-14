@@ -272,9 +272,9 @@ public class Model implements IMapSerializable, IModel
     }
 
     @Override
-    public void applyRaw(Animation action, float tick, float transition, boolean skipInitial)
+    public void applyRaw(IEntity target, Animation action, float tick, float transition, boolean skipInitial)
     {
-        MolangHelper.setMolangVariables(this.parser, null, tick, transition);
+        MolangHelper.setMolangVariables(this.parser, target, tick, transition);
         CubicModelAnimator.animate(this, action, tick, 1.0F, skipInitial, true);
     }
 

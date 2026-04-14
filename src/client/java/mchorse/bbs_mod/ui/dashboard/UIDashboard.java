@@ -40,6 +40,7 @@ import mchorse.bbs_mod.ui.utils.UIUtils;
 import mchorse.bbs_mod.ui.utils.icons.Icons;
 import mchorse.bbs_mod.utils.Direction;
 import mchorse.bbs_mod.utils.MathUtils;
+import mchorse.bbs_mod.utils.PlayerUtils;
 import mchorse.bbs_mod.utils.colors.Colors;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.loader.api.FabricLoader;
@@ -70,6 +71,8 @@ public class UIDashboard extends UIBaseMenu
     private GameMode lastGameMode = null;
 
     private UIChalkboard chalkboard;
+
+    public double playerX, playerY, playerZ;
 
     public UIDashboard()
     {
@@ -209,8 +212,12 @@ public class UIDashboard extends UIBaseMenu
     {
         super.onOpen(oldMenu);
 
-        this.lastPerspective = MinecraftClient.getInstance().options.getPerspective();
-        this.lastGameMode = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).getGameMode();
+        MinecraftClient mc = MinecraftClient.getInstance();
+        playerX = mc.player.getX();
+        playerY = mc.player.getY();
+        playerZ = mc.player.getZ();
+        this.lastPerspective = mc.options.getPerspective();
+        this.lastGameMode = mc.getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).getGameMode();
 
         MinecraftClient.getInstance().options.setPerspective(Perspective.FIRST_PERSON);
 
@@ -242,6 +249,7 @@ public class UIDashboard extends UIBaseMenu
             MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).setGameMode(this.lastGameMode);
         }
         this.lastGameMode = null;
+        PlayerUtils.teleport(playerX, playerY, playerZ, MinecraftClient.getInstance().player.getYaw(), MinecraftClient.getInstance().player.getPitch());
     }
 
     @Override
@@ -295,6 +303,7 @@ public class UIDashboard extends UIBaseMenu
         else
         {
             MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).setGameMode(this.lastGameMode);
+            PlayerUtils.teleport(playerX, playerY, playerZ, MinecraftClient.getInstance().player.getYaw(), MinecraftClient.getInstance().player.getPitch());
         }
     }
 
