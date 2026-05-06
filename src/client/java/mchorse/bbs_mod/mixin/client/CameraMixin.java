@@ -34,7 +34,10 @@ public abstract class CameraMixin
             this.setPos(position.x, position.y, position.z);
             this.setRotation(yaw, pitch);
 
-            PlayerUtils.teleport(position.x, Math.max(position.y, -64), position.z, MinecraftClient.getInstance().player.getYaw(), MinecraftClient.getInstance().player.getPitch());
+            if (!thirdPerson)
+            {
+                PlayerUtils.teleport(position.x, Math.max(position.y, -64), position.z, MinecraftClient.getInstance().player.getYaw(), MinecraftClient.getInstance().player.getPitch());
+            }
         }
     }
 }
