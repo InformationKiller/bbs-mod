@@ -258,7 +258,7 @@ public class BBSSettings {
 		editorCrosshair = builder.getBoolean("crosshair", false);
 		editorSeconds = builder.getBoolean("seconds", false);
 		editorPeriodicSave = builder.getInt("periodic_save", 60, 0, 3600);
-		editorHorizontalFlight = builder.getBoolean("horizontal_flight", false);
+		editorHorizontalFlight = builder.getBoolean("horizontal_flight", true);
 		editorOrbitMovementRequiresFlight = builder.getBoolean("orbit_movement_requires_flight", true);
 		editorPlayerFollowsCamera = builder.getBoolean("player_follows_camera", false);
 		builder.register(editorLayoutSettings = new ValueEditorLayout("layout"));

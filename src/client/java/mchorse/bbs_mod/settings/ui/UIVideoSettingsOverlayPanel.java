@@ -17,8 +17,8 @@ public class UIVideoSettingsOverlayPanel extends UIOverlayPanel
 
     private UIScrollView editor;
     private UITextbox arguments;
-    private UITextbox argumentsAudio;
-    private UIToggle audio;
+    private UITextbox argumentsAlpha;
+    private UIToggle alpha;
     private UIIcon flip;
     private UITrackpad width;
     private UITrackpad height;
@@ -37,9 +37,9 @@ public class UIVideoSettingsOverlayPanel extends UIOverlayPanel
         this.value = value;
 
         this.arguments = new UITextbox(1024, (s) -> this.value.arguments.set(s));
-        this.argumentsAudio = new UITextbox(1024, (s) -> this.value.argumentsAudio.set(s));
-        this.audio = new UIToggle(UIKeys.VIDEO_SETTINGS_AUDIO, (b) -> this.value.audio.set(b.getValue()));
-        this.audio.tooltip(UIKeys.VIDEO_SETTINGS_AUDIO_TOOLTIP);
+        this.argumentsAlpha = new UITextbox(1024, (s) -> this.value.argumentsAlpha.set(s));
+        this.alpha = new UIToggle(UIKeys.VIDEO_SETTINGS_ALPHA, (b) -> this.value.alpha.set(b.getValue()));
+        this.alpha.tooltip(UIKeys.VIDEO_SETTINGS_ALPHA_TOOLTIP);
         this.flip = new UIIcon(Icons.REFRESH, (b) ->
         {
             int w = this.value.width.get();
@@ -76,8 +76,8 @@ public class UIVideoSettingsOverlayPanel extends UIOverlayPanel
         this.editor = UI.scrollView(5, 6,
             UI.label(UIKeys.VIDEO_SETTINGS_ARGS),
             this.arguments,
-            UI.label(UIKeys.VIDEO_SETTINGS_AUDIO_ARGS),
-            this.argumentsAudio, this.audio,
+            UI.label(UIKeys.VIDEO_SETTINGS_ALPHA_ARGS),
+            this.argumentsAlpha, this.alpha,
             this.openFolderAfterExport,
             this.playSoundAfterExport,
             UI.label(UIKeys.VIDEO_SETTINGS_RESOLUTION).marginTop(6),
@@ -125,8 +125,8 @@ public class UIVideoSettingsOverlayPanel extends UIOverlayPanel
     private void fill()
     {
         this.arguments.setText(this.value.arguments.get());
-        this.argumentsAudio.setText(this.value.argumentsAudio.get());
-        this.audio.setValue(this.value.audio.get());
+        this.argumentsAlpha.setText(this.value.argumentsAlpha.get());
+        this.alpha.setValue(this.value.alpha.get());
         this.width.setValue(this.value.width.get());
         this.height.setValue(this.value.height.get());
         this.frameRate.setValue(this.value.frameRate.get());

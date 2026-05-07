@@ -1259,6 +1259,11 @@ public class UIClips extends UIElement
 
                 return true;
             }
+            else
+            {
+                this.clearSelection();
+                this.pickLastSelectedClip();
+            }
         }
 
         if (shift && !this.hasEmbeddedView())
@@ -1408,6 +1413,18 @@ public class UIClips extends UIElement
         }
 
         this.vertical.mouseReleased(context);
+
+        if (!Window.isShiftPressed() && !this.canGrab)
+        {
+            int tick = (int) Math.floor(this.scale.from(context.mouseX));
+            int layerIndex = this.fromLayerY(context.mouseY);
+            Clip clip = this.clips.getClipAt(tick, layerIndex);
+
+            if (clip != null)
+            {
+                this.setSelected(clip);
+            }
+        }
 
         if (this.selecting)
         {

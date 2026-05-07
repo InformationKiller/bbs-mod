@@ -194,7 +194,7 @@ public class BBSRendering
         if (texture == null)
         {
             texture = new Texture();
-            texture.setFormat(TextureFormat.RGB_U8);
+            texture.setFormat(TextureFormat.RGBA_U8);
             texture.setFilter(GL11.GL_NEAREST);
         }
 

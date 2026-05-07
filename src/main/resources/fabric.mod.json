@@ -2,8 +2,8 @@
     "schemaVersion": 1,
     "id": "bbs",
     "version": "${version}",
-    "name": "BBS NK mod",
-    "description": "A new generation of video production mod\nBased on BBS FS mod and BBS CML Edition\nModified for my best friend N. By K",
+    "name": "BBS NYK mod",
+    "description": "A new generation of video production mod\nBased on BBS FS mod and BBS CML Edition\n为什么！为什么！！为什么连FS都停更了！这是BB一族的诅咒吗！这个世界真的还有希望吗！！\nNYK是三个人的名字，读作New York，是的，你们可以叫这个版本新乡。",
     "authors": [
         "McHorse",
         "Wemppy",
@@ -33,7 +33,9 @@
         "Kirkus (Ukrainian translations)",
         "Eleeter (Urdu translations)",
         "Diobede (Vietnamese translations)",
-        "bay4lly.java (bug fixes)"
+        "bay4lly.java (bug fixes)",
+        "Nemloi",
+        "Yancie"
     ],
     "contact": {
         "homepage": "https://www.patreon.com/McHorse"

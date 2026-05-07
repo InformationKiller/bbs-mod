@@ -7,6 +7,8 @@ import mchorse.bbs_mod.client.BBSRendering;
 import mchorse.bbs_mod.resources.Link;
 import mchorse.bbs_mod.ui.utils.UIUtils;
 import net.minecraft.client.MinecraftClient;
+
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 import sun.misc.Unsafe;
@@ -76,7 +78,7 @@ public class VideoRecorder
         this.textureWidth = width;
         this.textureHeight = height;
 
-        int size = width * height * 3;
+        int size = width * height * (BBSSettings.videoSettings.alpha.get() ? 4 : 3);
 
         if (this.buffer == null)
         {
@@ -91,9 +93,9 @@ public class VideoRecorder
 
             Path path = Paths.get(movies.toString());
             String movieName = StringUtils.createTimestampFilename();
-            String params = audioFile == null
-                ? BBSSettings.videoSettings.arguments.get()
-                : BBSSettings.videoSettings.argumentsAudio.get();
+            String params = BBSSettings.videoSettings.alpha.get()
+                ? BBSSettings.videoSettings.argumentsAlpha.get()
+                : BBSSettings.videoSettings.arguments.get();
             StringBuilder filters = new StringBuilder("vflip");
             float frameRate = (float) BBSRendering.getVideoFrameRate();
 
@@ -109,11 +111,6 @@ public class VideoRecorder
             params = params.replace("%FPS%", String.valueOf(frameRate));
             params = params.replace("%NAME%", movieName);
             params = params.replace("%FILTERS%", filters.toString());
-
-            if (audioFile != null)
-            {
-                params = params.replace("%AUDIO_TRACK%", "\"" + audioFile.getAbsolutePath() + "\"");
-            }
 
             List<String> args = new ArrayList<>();
             String encoder = FFMpegUtils.getFFMPEG();
@@ -281,7 +278,7 @@ public class VideoRecorder
             GL30.glPixelStorei(GL30.GL_PACK_ALIGNMENT, 1);
             GL30.glBindBuffer(GL30.GL_PIXEL_PACK_BUFFER, this.pbos[pbo]);
             GL30.glBindTexture(GL30.GL_TEXTURE_2D, this.textureId);
-            GL30.glGetTexImage(GL30.GL_TEXTURE_2D, 0, GL30.GL_BGR, GL30.GL_UNSIGNED_BYTE, 0);
+            GL30.glGetTexImage(GL30.GL_TEXTURE_2D, 0, BBSSettings.videoSettings.alpha.get() ? GL30.GL_BGRA : GL30.GL_BGR, GL30.GL_UNSIGNED_BYTE, 0);
 
             GL30.glBindBuffer(GL30.GL_PIXEL_PACK_BUFFER, this.pbos[nextPbo]);
 
