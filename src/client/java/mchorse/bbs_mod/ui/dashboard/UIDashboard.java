@@ -244,7 +244,7 @@ public class UIDashboard extends UIBaseMenu
         MinecraftClient.getInstance().options.setPerspective(this.lastPerspective);
         if (this.lastGameMode != null)
         {
-            MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).setGameMode(this.lastGameMode);
+            PlayerUtils.gamemode(this.lastGameMode);
         }
         this.lastGameMode = null;
         PlayerUtils.teleport(playerX, playerY, playerZ, MinecraftClient.getInstance().player.getYaw(), MinecraftClient.getInstance().player.getPitch());
@@ -295,12 +295,12 @@ public class UIDashboard extends UIBaseMenu
         {
             if (this.lastGameMode != null)
             {
-                MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).setGameMode(GameMode.SPECTATOR);
+                PlayerUtils.gamemode(GameMode.SPECTATOR);
             }
         }
         else
         {
-            MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).setGameMode(this.lastGameMode);
+            PlayerUtils.gamemode(this.lastGameMode);
             PlayerUtils.teleport(playerX, playerY, playerZ, MinecraftClient.getInstance().player.getYaw(), MinecraftClient.getInstance().player.getPitch());
         }
     }

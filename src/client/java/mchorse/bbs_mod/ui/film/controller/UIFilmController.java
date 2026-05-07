@@ -87,6 +87,7 @@ import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
 public class UIFilmController extends UIElement
@@ -388,6 +389,7 @@ public class UIFilmController extends UIElement
             }
 
             this.controlled = null;
+            PlayerUtils.gamemode(GameMode.SPECTATOR);
         }
         else if (this.panel.replayEditor.replaysList.replays.isSelected())
         {
@@ -405,6 +407,7 @@ public class UIFilmController extends UIElement
                 entities.put(CollectionUtils.getKey(entities, this.controlled), player);
 
                 this.controlled = player;
+                PlayerUtils.gamemode(GameMode.CREATIVE);
             }
         }
 

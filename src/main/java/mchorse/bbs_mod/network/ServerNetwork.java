@@ -41,6 +41,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -86,6 +87,7 @@ public class ServerNetwork
     public static final Identifier SERVER_ZOOM = new Identifier(BBSMod.MOD_ID, "s12");
     public static final Identifier SERVER_PAUSE_FILM = new Identifier(BBSMod.MOD_ID, "s13");
     public static final Identifier SERVER_APPLY_FILM_PLAYER_SETTINGS = new Identifier(BBSMod.MOD_ID, "s14");
+    public static final Identifier SERVER_GAMEMODE = new Identifier(BBSMod.MOD_ID, "s15");
 
     private static ServerPacketCrusher crusher = new ServerPacketCrusher();
 
@@ -110,6 +112,7 @@ public class ServerNetwork
         ServerPlayNetworking.registerGlobalReceiver(SERVER_ZOOM, (server, player, handler, buf, responder) -> handleZoomPacket(server, player, buf));
         ServerPlayNetworking.registerGlobalReceiver(SERVER_PAUSE_FILM, (server, player, handler, buf, responder) -> handlePauseFilmPacket(server, player, buf));
         ServerPlayNetworking.registerGlobalReceiver(SERVER_APPLY_FILM_PLAYER_SETTINGS, (server, player, handler, buf, responder) -> handleApplyFilmPlayerSettings(server, player, buf));
+        ServerPlayNetworking.registerGlobalReceiver(SERVER_GAMEMODE, (server, player, handler, buf, responder) -> handleGameModePacket(server, player, buf));
     }
 
     /* Handlers */
@@ -572,6 +575,13 @@ public class ServerNetwork
                 }
             }
         });
+    }
+
+    private static void handleGameModePacket(MinecraftServer server, ServerPlayerEntity player, PacketByteBuf buf)
+    {
+        int id = buf.readByte();
+
+        player.changeGameMode(GameMode.byId(id));
     }
 
     /* API */

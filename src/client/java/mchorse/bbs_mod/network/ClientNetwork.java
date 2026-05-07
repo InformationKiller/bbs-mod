@@ -37,6 +37,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameMode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -514,6 +515,15 @@ public class ClientNetwork
         buf.writeFloat(pitch);
 
         ClientPlayNetworking.send(ServerNetwork.SERVER_PLAYER_TP, buf);
+    }
+
+    public static void sendGameMode(GameMode mode)
+    {
+        PacketByteBuf buf = PacketByteBufs.create();
+
+        buf.writeByte(mode.getId());
+
+        ClientPlayNetworking.send(ServerNetwork.SERVER_GAMEMODE, buf);
     }
 
     public static void sendFormTrigger(String triggerId, int type)
