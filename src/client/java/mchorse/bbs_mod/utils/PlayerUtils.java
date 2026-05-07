@@ -7,6 +7,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
 public class PlayerUtils
@@ -47,6 +48,20 @@ public class PlayerUtils
         else
         {
             ClientNetwork.sendTeleport(player, x, y, z);
+        }
+    }
+
+    public static void gamemode(GameMode mode)
+    {
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+        if (!ClientNetwork.isIsBBSModOnServer())
+        {
+            player.networkHandler.sendCommand("gamemode " + mode.getName() + " " + player.getGameProfile().getName());
+        }
+        else
+        {
+            ClientNetwork.sendGameMode(mode);
         }
     }
 
