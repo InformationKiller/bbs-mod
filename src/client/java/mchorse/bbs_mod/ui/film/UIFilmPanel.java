@@ -3191,9 +3191,6 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
         double z = cameraPos.z;
 
         PlayerUtils.teleport(x, y, z, MathUtils.toDeg(camera.rotation.y) - 180F, MathUtils.toDeg(camera.rotation.x));
-        this.dashboard.playerX = x;
-        this.dashboard.playerY = y;
-        this.dashboard.playerZ = z;
     }
 
     public void setPlayerToCamera(boolean value)

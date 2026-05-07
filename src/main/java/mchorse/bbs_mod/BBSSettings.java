@@ -21,7 +21,7 @@ import mchorse.bbs_mod.utils.keyframes.KeyframeShape;
 public class BBSSettings {
 
 	public static final String DEFAULT_FFMPEG_ARGUMENTS = "-f rawvideo -pix_fmt bgr24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -vf %FILTERS% -c:v libx264 -preset ultrafast -tune zerolatency -qp 18 -pix_fmt yuv420p %NAME%.mp4";
-	public static final String DEFAULT_AUDIO_FFMPEG_ARGUMENTS = "-f rawvideo -pix_fmt bgr24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -i %AUDIO_TRACK% -vf %FILTERS% -c:v libx264 -preset ultrafast -tune zerolatency -qp 18 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest %NAME%.mp4";
+	public static final String DEFAULT_ALPHA_FFMPEG_ARGUMENTS = "-f rawvideo -pix_fmt bgra -s %WIDTH%x%HEIGHT% -r %FPS% -i - -vf %FILTERS% -c:v libx264 -preset ultrafast -tune zerolatency -qp 18 -pix_fmt yuv420p %NAME%_rgb.mp4 -vf %FILTERS%,format=bgra,alphaextract,format=yuv420p %NAME%_alpha.mp4";
 
 	public static ValueColors favoriteColors;
 	public static ValueColors recentColors;
@@ -81,14 +81,14 @@ public class BBSSettings {
 	public static ValueInt videoHeight;
 	public static ValueInt videoFrameRate;
 	public static ValueString videoExportPath;
-	public static ValueBoolean videoExportAudio;
+	public static ValueBoolean videoExportAlpha;
 	public static ValueInt videoMotionBlur;
 	public static ValueInt videoHeldFrames;
 	public static ValueFloat videoDelay;
 	public static ValueBoolean videoOpenFolderAfterExport;
 	public static ValueBoolean videoPlaySoundAfterExport;
 	public static ValueString videoArguments;
-	public static ValueString videoArgumentsAudio;
+	public static ValueString videoArgumentsAlpha;
 
 	public static ValueFloat editorCameraSpeed;
 	public static ValueFloat editorCameraAngleSpeed;
@@ -452,14 +452,14 @@ public class BBSSettings {
 		videoHeight = builder.getInt("height", 720, 2, 8096);
 		videoFrameRate = builder.getInt("frame_rate", 60, 10, 1000);
 		videoExportPath = builder.getString("export_path", "");
-		videoExportAudio = builder.getBoolean("audio", false);
+		videoExportAlpha = builder.getBoolean("alpha", false);
 		videoMotionBlur = builder.getInt("motion_blur", 0, 0, 6);
 		videoHeldFrames = builder.getInt("held_frames", 1, 1, 1000);
 		videoDelay = builder.getFloat("delay", 0.5F, 0F, 30F);
 		videoOpenFolderAfterExport = builder.getBoolean("open_folder_after_export", false);
 		videoPlaySoundAfterExport = builder.getBoolean("play_sound_after_export", true);
 		videoArguments = builder.getString("arguments", DEFAULT_FFMPEG_ARGUMENTS);
-		videoArgumentsAudio = builder.getString("arguments_audio", DEFAULT_AUDIO_FFMPEG_ARGUMENTS);
+		videoArgumentsAlpha = builder.getString("arguments_alpha", DEFAULT_ALPHA_FFMPEG_ARGUMENTS);
 
 		/* Camera editor */
 		builder.category("editor", Icons.EDITOR);
@@ -474,7 +474,7 @@ public class BBSSettings {
 		editorCrosshair = builder.getBoolean("crosshair", false);
 		editorSeconds = builder.getBoolean("seconds", false);
 		editorPeriodicSave = builder.getInt("periodic_save", 60, 0, 3600);
-		editorHorizontalFlight = builder.getBoolean("horizontal_flight", false);
+		editorHorizontalFlight = builder.getBoolean("horizontal_flight", true);
 		editorOrbitMovementRequiresFlight = builder.getBoolean("orbit_movement_requires_flight", true);
 		editorOrbitCenterMarker = builder.getBoolean("orbit_center_marker", false);
 		editorOrbitTeleportOnSwitch = builder.getBoolean("orbit_teleport_on_switch", true);

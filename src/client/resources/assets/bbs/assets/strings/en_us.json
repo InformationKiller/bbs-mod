@@ -1466,5 +1466,7 @@
     "bbs.ui.forms.editors.structure.pick_structure": "Pick structure...",
     "bbs.ui.forms.editors.structure.title": "Structure",
     "bbs.ui.importer.structure": "Structure (.nbt)",
-    "bbs.ui.model_blocks.light_level": "Light level"
+    "bbs.ui.model_blocks.light_level": "Light level",
+
+	"bbs.ui.camera.panels.curves.chroma_sky_color": "Chroma sky color"
 }

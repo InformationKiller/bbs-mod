@@ -2,10 +2,6 @@ package mchorse.bbs_mod.mixin.client;
 
 import mchorse.bbs_mod.BBSModClient;
 import mchorse.bbs_mod.camera.controller.CameraController;
-import mchorse.bbs_mod.ui.dashboard.UIDashboard;
-import mchorse.bbs_mod.ui.film.UIFilmPanel;
-import mchorse.bbs_mod.utils.PlayerUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.BlockView;
@@ -35,21 +31,6 @@ public abstract class CameraMixin
 
             this.setPos(position.x, position.y, position.z);
             this.setRotation(yaw, pitch);
-
-            boolean controlling = true;
-            if (BBSModClient.getDashboardIfCreated() != null)
-            {
-                UIDashboard dashboard = BBSModClient.getDashboard();
-                if (dashboard.getPanels().panel instanceof UIFilmPanel panel)
-                {
-                    controlling = panel.getController().isControlling();
-                }
-            }
-
-            if (!thirdPerson && !controlling)
-            {
-                PlayerUtils.teleport(position.x, Math.max(position.y, -64), position.z, MinecraftClient.getInstance().player.getYaw(), MinecraftClient.getInstance().player.getPitch());
-            }
         }
     }
 }

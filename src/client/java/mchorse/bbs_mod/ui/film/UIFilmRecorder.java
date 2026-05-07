@@ -147,31 +147,6 @@ public class UIFilmRecorder extends UIElement
 
         File audioFile = null;
 
-        try
-        {
-            if (BBSSettings.videoExportAudio.get())
-            {
-                Clips camera = this.editor.getData().camera;
-                List<AudioClip> audioClips = camera.getClips(AudioClip.class);
-
-                String name = StringUtils.createTimestampFilename() + ".wav";
-                File file = new File(BBSRendering.getVideoFolder(), name);
-                Vector2i range = BBSSettings.editorLoop.get() ? this.editor.getLoopingRange() : new Vector2i();
-
-                if (AudioRenderer.renderAudio(file, audioClips, camera.calculateDuration(), 48000, TimeUtils.toSeconds(range.x), TimeUtils.toSeconds(range.y)))
-                {
-                    audioFile = file;
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            UIOverlay.addOverlay(context, new UIMessageOverlayPanel(UIKeys.GENERAL_ERROR, IKey.constant(e.getMessage())));
-            this.stopCancelled = true;
-            this.stop();
-            return;
-        }
-
         this.pendingAudioFile = audioFile;
         this.pendingTextureId = id;
         this.pendingWidth = w;

@@ -72,8 +72,6 @@ public class UIDashboard extends UIBaseMenu
 
     private UIChalkboard chalkboard;
 
-    public double playerX, playerY, playerZ;
-
     public UIDashboard()
     {
         super();
@@ -213,9 +211,6 @@ public class UIDashboard extends UIBaseMenu
         super.onOpen(oldMenu);
 
         MinecraftClient mc = MinecraftClient.getInstance();
-        playerX = mc.player.getX();
-        playerY = mc.player.getY();
-        playerZ = mc.player.getZ();
         this.lastPerspective = mc.options.getPerspective();
         this.lastGameMode = mc.getNetworkHandler().getPlayerListEntry(MinecraftClient.getInstance().player.getUuid()).getGameMode();
 
@@ -249,7 +244,6 @@ public class UIDashboard extends UIBaseMenu
             PlayerUtils.gamemode(this.lastGameMode);
         }
         this.lastGameMode = null;
-        PlayerUtils.teleport(playerX, playerY, playerZ, MinecraftClient.getInstance().player.getYaw(), MinecraftClient.getInstance().player.getPitch());
     }
 
     @Override
@@ -303,7 +297,6 @@ public class UIDashboard extends UIBaseMenu
         else
         {
             PlayerUtils.gamemode(this.lastGameMode);
-            PlayerUtils.teleport(playerX, playerY, playerZ, MinecraftClient.getInstance().player.getYaw(), MinecraftClient.getInstance().player.getPitch());
         }
     }
 

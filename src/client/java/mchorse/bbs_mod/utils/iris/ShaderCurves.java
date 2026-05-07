@@ -65,6 +65,8 @@ public class ShaderCurves
             return source;
         }
 
+        if (!startsWithVersion(source)) return source;
+
         Map<String, ShaderVariable> variables = parseVariables(source);
         variables.put(SUN_PATH_ROTATION_CONST, SUN_PATH_ROTATION_VARIABLE);
 
@@ -378,6 +380,16 @@ public class ShaderCurves
     public static void addUniforms(List<CachedUniform> list)
     {
         BBSRendering.addUniforms(list, variableMap);
+    }
+
+    public static boolean startsWithVersion(String str) {
+        if (str == null) return false;
+        int i = 0;
+        int n = str.length();
+        while (i < n && Character.isWhitespace(str.charAt(i))) {
+            i++;
+        }
+        return i + 8 <= n && str.startsWith("#version", i);
     }
 
     public static class ShaderVariable

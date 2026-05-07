@@ -78,7 +78,7 @@ public class VideoRecorder
         this.textureWidth = width;
         this.textureHeight = height;
 
-        int size = width * height * 3;
+        int size = width * height * (BBSSettings.videoExportAlpha.get() ? 4 : 3);
 
         if (this.buffer == null)
         {
@@ -93,9 +93,9 @@ public class VideoRecorder
 
             Path path = Paths.get(movies.toString());
             String movieName = StringUtils.createTimestampFilename();
-            String params = audioFile == null
-                ? BBSSettings.videoArguments.get()
-                : BBSSettings.videoArgumentsAudio.get();
+            String params = BBSSettings.videoExportAlpha.get()
+                ? BBSSettings.videoArgumentsAlpha.get()
+                : BBSSettings.videoArguments.get();
             StringBuilder filters = new StringBuilder("vflip");
             float frameRate = (float) BBSRendering.getVideoFrameRate();
 
@@ -111,11 +111,6 @@ public class VideoRecorder
             params = params.replace("%FPS%", String.valueOf(frameRate));
             params = params.replace("%NAME%", movieName);
             params = params.replace("%FILTERS%", filters.toString());
-
-            if (audioFile != null)
-            {
-                params = params.replace("%AUDIO_TRACK%", "\"" + audioFile.getAbsolutePath() + "\"");
-            }
 
             List<String> args = new ArrayList<>();
             String encoder = FFMpegUtils.getFFMPEG();
@@ -314,7 +309,7 @@ public class VideoRecorder
             GL30.glPixelStorei(GL30.GL_PACK_ALIGNMENT, 1);
             GL30.glBindBuffer(GL30.GL_PIXEL_PACK_BUFFER, this.pbos[pbo]);
             GL30.glBindTexture(GL30.GL_TEXTURE_2D, this.textureId);
-            GL30.glGetTexImage(GL30.GL_TEXTURE_2D, 0, GL30.GL_BGR, GL30.GL_UNSIGNED_BYTE, 0);
+            GL30.glGetTexImage(GL30.GL_TEXTURE_2D, 0, BBSSettings.videoExportAlpha.get() ? GL30.GL_BGRA : GL30.GL_BGR, GL30.GL_UNSIGNED_BYTE, 0);
 
             GL30.glBindBuffer(GL30.GL_PIXEL_PACK_BUFFER, this.pbos[nextPbo]);
 
