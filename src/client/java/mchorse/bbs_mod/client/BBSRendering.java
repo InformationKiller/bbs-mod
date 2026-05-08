@@ -194,7 +194,6 @@ public class BBSRendering
         if (texture == null)
         {
             texture = new Texture();
-            texture.setFormat(TextureFormat.RGBA_U8);
             texture.setFilter(GL11.GL_NEAREST);
         }
 
@@ -398,6 +397,7 @@ public class BBSRendering
         Texture texture = getTexture();
 
         texture.bind();
+        texture.setFormat(BBSSettings.videoSettings.alpha.get() ? TextureFormat.RGBA_U8 : TextureFormat.RGB_U8);
         texture.setSize(framebuffer.textureWidth, framebuffer.textureHeight);
         GL11.glCopyTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, 0, 0, framebuffer.textureWidth, framebuffer.textureHeight);
         texture.unbind();

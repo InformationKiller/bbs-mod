@@ -155,7 +155,7 @@ public class FilmEditorController extends BaseFilmController
 
         if (value instanceof KeyframeChannel<?> pose && entity instanceof StubEntity)
         {
-            boolean canRender = onionSkin.enabled.get();
+            boolean canRender = onionSkin.enabled.get() && !this.controller.isPlaying();
 
             if (!onionSkin.all.get())
             {
