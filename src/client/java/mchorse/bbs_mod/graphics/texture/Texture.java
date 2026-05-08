@@ -62,6 +62,7 @@ public class Texture
         this.target = GL11.GL_TEXTURE_2D;
 
         this.bind();
+        this.realloc();
     }
 
     public void setParent(AnimatedTexture parent)
@@ -128,7 +129,11 @@ public class Texture
 
     public void setFormat(TextureFormat format)
     {
-        this.format = format;
+        if (this.format != format)
+        {
+            this.format = format;
+            this.realloc();
+        }
     }
 
     public int getFilter()
@@ -187,10 +192,21 @@ public class Texture
 
     public void setSize(int width, int height)
     {
-        this.width = width;
-        this.height = height;
+        if (this.width != width || this.height != height)
+        {
+            this.width = width;
+            this.height = height;
 
-        GL11.glTexImage2D(this.target, 0, this.format.internal, width, height, 0, this.format.format, this.format.type, 0);
+            this.realloc();
+        }
+    }
+
+    public void realloc()
+    {
+        if (this.width != 0 && this.height != 0)
+        {
+            GL11.glTexImage2D(this.target, 0, this.format.internal, this.width, this.height, 0, this.format.format, this.format.type, 0);
+        }
     }
 
     public void updateTexture(Pixels pixels)
@@ -234,12 +250,14 @@ public class Texture
         GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
         GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
 
-        GL11.glTexImage2D(target, level, this.format.internal, w, h, 0, this.format.format, this.format.type, buffer);
-
         if (level == 0)
         {
-            this.width = w;
-            this.height = h;
+            this.setSize(w, h);
+            GL11.glTexSubImage2D(target, 0, 0, 0, w, h, this.format.format, this.format.type, buffer);
+        }
+        else
+        {
+            GL11.glTexImage2D(target, level, this.format.internal, w, h, 0, this.format.format, this.format.type, buffer);
         }
     }
 
