@@ -294,36 +294,37 @@ public class ReplayKeyframes extends ValueGroup
         entity.setOnGround(this.grounded.interpolate(tick) != 0D);
         entity.setHurtTimer(this.damage.interpolate(tick).intValue());
 
+        float[] prevSticks = entity.getPrevExtraVariables();
         float[] sticks = entity.getExtraVariables();
 
         if (leftStick)
         {
-            sticks[0] = this.stickLeftX.interpolate(tick).floatValue();
-            sticks[1] = this.stickLeftY.interpolate(tick).floatValue();
+            prevSticks[0] = sticks[0] = this.stickLeftX.interpolate(tick).floatValue();
+            prevSticks[1] = sticks[1] = this.stickLeftY.interpolate(tick).floatValue();
         }
 
         if (rightStick)
         {
-            sticks[2] = this.stickRightX.interpolate(tick).floatValue();
-            sticks[3] = this.stickRightY.interpolate(tick).floatValue();
+            prevSticks[2] = sticks[2] = this.stickRightX.interpolate(tick).floatValue();
+            prevSticks[3] = sticks[3] = this.stickRightY.interpolate(tick).floatValue();
         }
 
         if (triggers)
         {
-            sticks[4] = this.triggerLeft.interpolate(tick).floatValue();
-            sticks[5] = this.triggerRight.interpolate(tick).floatValue();
+            prevSticks[4] = sticks[4] = this.triggerLeft.interpolate(tick).floatValue();
+            prevSticks[5] = sticks[5] = this.triggerRight.interpolate(tick).floatValue();
         }
 
         if (extra1)
         {
-            sticks[6] = this.extra1X.interpolate(tick).floatValue();
-            sticks[7] = this.extra1Y.interpolate(tick).floatValue();
+            prevSticks[6] = sticks[6] = this.extra1X.interpolate(tick).floatValue();
+            prevSticks[7] = sticks[7] = this.extra1Y.interpolate(tick).floatValue();
         }
 
         if (extra2)
         {
-            sticks[8] = this.extra2X.interpolate(tick).floatValue();
-            sticks[9] = this.extra2Y.interpolate(tick).floatValue();
+            prevSticks[8] = sticks[8] = this.extra2X.interpolate(tick).floatValue();
+            prevSticks[9] = sticks[9] = this.extra2Y.interpolate(tick).floatValue();
         }
 
         entity.setEquipmentStack(EquipmentSlot.MAINHAND, this.mainHand.interpolate(tick));
