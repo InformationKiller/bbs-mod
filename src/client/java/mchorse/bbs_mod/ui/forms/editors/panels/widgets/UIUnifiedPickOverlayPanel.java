@@ -273,7 +273,7 @@ public class UIUnifiedPickOverlayPanel extends UIOverlayPanel
                 ItemStack parsed = ItemStack.fromNbt(nbt);
 
                 this.acceptItem(parsed);
-                this.selectId(Registries.ITEM.getId(parsed.getItem()).toString());
+                this.updateSelected();
             }
             catch (Exception e)
             {}
@@ -315,16 +315,13 @@ public class UIUnifiedPickOverlayPanel extends UIOverlayPanel
 
         if (mode == PickerMode.ITEM)
         {
-            this.selectedId = Registries.ITEM.getId(this.itemStack.getItem()).toString();
-            this.itemCount.limit(1, this.itemStack.getMaxCount(), true).setValue(this.itemStack.getCount());
-            this.itemName.setText(this.itemStack.getName().getString());
             this.updateItemNbt();
         }
         else
         {
-            this.selectedId = Registries.BLOCK.getId(this.blockState.getBlock()).toString();
             this.fillBlockProperties(this.blockState);
         }
+        this.updateSelected();
 
         this.refreshEntries();
     }
@@ -377,8 +374,6 @@ public class UIUnifiedPickOverlayPanel extends UIOverlayPanel
             }
 
             this.acceptItem(selected);
-            this.itemCount.limit(1, selected.getMaxCount(), true).setValue(selected.getCount());
-            this.itemName.setText(selected.getName().getString());
             this.updateItemNbt();
         }
         else
@@ -386,14 +381,27 @@ public class UIUnifiedPickOverlayPanel extends UIOverlayPanel
             Block block = Registries.BLOCK.get(new Identifier(id));
             BlockState selectedState = block.getDefaultState();
 
-            if (this.blockState != null && this.blockState.getBlock() == block)
-            {
-                selectedState = this.blockState;
-            }
-
             this.acceptBlock(selectedState);
             this.fillBlockProperties(this.blockState);
         }
+
+        this.updateSelected();
+    }
+
+    private void updateSelected()
+    {
+        if (this.mode == PickerMode.ITEM)
+        {
+            this.selectedId = Registries.ITEM.getId(this.itemStack.getItem()).toString();
+            this.itemCount.limit(1, this.itemStack.getMaxCount(), true).setValue(this.itemStack.getCount());
+            this.itemName.setText(this.itemStack.getName().getString());
+        }
+        else
+        {
+            this.selectedId = Registries.BLOCK.getId(this.blockState.getBlock()).toString();
+        }
+
+        this.list.list.setCurrentScroll(this.selectedId);
     }
 
     private void acceptItem(ItemStack stack)
@@ -541,15 +549,15 @@ public class UIUnifiedPickOverlayPanel extends UIOverlayPanel
             if (UIUnifiedPickOverlayPanel.this.mode == PickerMode.ITEM)
             {
                 UIUnifiedPickOverlayPanel.this.acceptItem(stack);
-                UIUnifiedPickOverlayPanel.this.selectId(Registries.ITEM.getId(stack.getItem()).toString());
+                UIUnifiedPickOverlayPanel.this.updateItemNbt();
             }
             else if (stack.getItem() instanceof BlockItem blockItem)
             {
                 BlockState state = blockItem.getBlock().getDefaultState();
 
                 UIUnifiedPickOverlayPanel.this.acceptBlock(state);
-                UIUnifiedPickOverlayPanel.this.selectId(Registries.BLOCK.getId(state.getBlock()).toString());
             }
+            UIUnifiedPickOverlayPanel.this.updateSelected();
 
             return true;
         }
@@ -576,6 +584,8 @@ public class UIUnifiedPickOverlayPanel extends UIOverlayPanel
                 int x = startX + i * (SLOT_SIZE + SLOT_GAP);
                 ItemStack stack = inventory.getStack(i);
                 int border = i == inventory.selectedSlot ? Colors.A100 | BBSSettings.primaryColor.get() : Colors.LIGHTER_GRAY;
+
+                if (!(stack.getItem() instanceof BlockItem) && UIUnifiedPickOverlayPanel.this.mode == PickerMode.BLOCK) border = Colors.A100 | 0x7f0000;
 
                 context.batcher.box(x, y, x + SLOT_SIZE, y + SLOT_SIZE, border);
                 context.batcher.box(x + 1, y + 1, x + SLOT_SIZE - 1, y + SLOT_SIZE - 1, Colors.A50);

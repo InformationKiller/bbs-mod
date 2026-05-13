@@ -163,6 +163,10 @@ public class UIPickableFormRenderer extends UIFormRenderer implements GizmoViewp
             .set(FormRenderType.PREVIEW, this.target == null ? this.entity : this.target, context.batcher.getContext().getMatrices(), LightmapTextureManager.pack(15, 15), OverlayTexture.DEFAULT_UV, context.getTransition())
             .camera(this.camera)
             .modelRenderer();
+        MatrixStack renderStack = RenderSystem.getModelViewStack();
+        renderStack.push();
+        renderStack.loadIdentity();
+        RenderSystem.applyModelViewMatrix();
 
         if (this.renderForm == null || this.renderForm.get())
         {
@@ -212,6 +216,8 @@ public class UIPickableFormRenderer extends UIFormRenderer implements GizmoViewp
         }
 
         this.gizmo.update(context);
+        renderStack.pop();
+        RenderSystem.applyModelViewMatrix();
     }
 
     private void renderAxes(UIContext context)
