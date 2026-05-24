@@ -378,7 +378,7 @@ public abstract class BaseFilmController
                 IEntity entity = new StubEntity(world);
 
                 entity.setForm(FormUtils.copy(replay.form.get()));
-                replay.keyframes.apply(0, entity);
+                replay.keyframes.apply(0, entity, true);
                 entity.setPrevX(entity.getX());
                 entity.setPrevY(entity.getY());
                 entity.setPrevZ(entity.getZ());
@@ -428,7 +428,7 @@ public abstract class BaseFilmController
                 ticks = replay.getTick(ticks);
 
                 this.updateEntityAndForm(entity, ticks);
-                this.applyReplay(replay, ticks, entity);
+                this.applyReplay(replay, ticks, entity, this.paused);
 
                 Map<String, Integer> actors = this.getActors();
 
@@ -539,9 +539,9 @@ public abstract class BaseFilmController
         }
     }
 
-    protected void applyReplay(Replay replay, int ticks, IEntity entity)
+    protected void applyReplay(Replay replay, int ticks, IEntity entity, boolean paused)
     {
-        replay.keyframes.apply(ticks, entity);
+        replay.keyframes.apply(ticks, entity, paused);
         replay.applyClientActions(ticks, entity, this.film);
     }
 

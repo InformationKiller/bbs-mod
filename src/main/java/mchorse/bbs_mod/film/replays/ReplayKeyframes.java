@@ -229,15 +229,15 @@ public class ReplayKeyframes extends ValueGroup
         }
     }
 
-    public void apply(int tick, IEntity entity)
+    public void apply(int tick, IEntity entity, boolean paused)
     {
-        this.apply(tick, entity, null);
+        this.apply(tick, entity, null, paused);
     }
 
     /**
      * Apply a frame at given tick on the given entity.
      */
-    public void apply(int tick, IEntity entity, List<String> groups)
+    public void apply(int tick, IEntity entity, List<String> groups, boolean paused)
     {
         boolean empty = groups == null || groups.isEmpty();
         boolean position = empty || !groups.contains(GROUP_POSITION);
@@ -299,32 +299,62 @@ public class ReplayKeyframes extends ValueGroup
 
         if (leftStick)
         {
-            prevSticks[0] = sticks[0] = this.stickLeftX.interpolate(tick).floatValue();
-            prevSticks[1] = sticks[1] = this.stickLeftY.interpolate(tick).floatValue();
+            sticks[0] = this.stickLeftX.interpolate(tick).floatValue();
+            sticks[1] = this.stickLeftY.interpolate(tick).floatValue();
+
+            if (paused)
+            {
+                prevSticks[0] = sticks[0];
+                prevSticks[1] = sticks[1];
+            }
         }
 
         if (rightStick)
         {
-            prevSticks[2] = sticks[2] = this.stickRightX.interpolate(tick).floatValue();
-            prevSticks[3] = sticks[3] = this.stickRightY.interpolate(tick).floatValue();
+            sticks[2] = this.stickRightX.interpolate(tick).floatValue();
+            sticks[3] = this.stickRightY.interpolate(tick).floatValue();
+
+            if (paused)
+            {
+                prevSticks[2] = sticks[2];
+                prevSticks[3] = sticks[3];
+            }
         }
 
         if (triggers)
         {
-            prevSticks[4] = sticks[4] = this.triggerLeft.interpolate(tick).floatValue();
-            prevSticks[5] = sticks[5] = this.triggerRight.interpolate(tick).floatValue();
+            sticks[4] = this.triggerLeft.interpolate(tick).floatValue();
+            sticks[5] = this.triggerRight.interpolate(tick).floatValue();
+
+            if (paused)
+            {
+                prevSticks[4] = sticks[4];
+                prevSticks[5] = sticks[5];
+            }
         }
 
         if (extra1)
         {
-            prevSticks[6] = sticks[6] = this.extra1X.interpolate(tick).floatValue();
-            prevSticks[7] = sticks[7] = this.extra1Y.interpolate(tick).floatValue();
+            sticks[6] = this.extra1X.interpolate(tick).floatValue();
+            sticks[7] = this.extra1Y.interpolate(tick).floatValue();
+
+            if (paused)
+            {
+                prevSticks[6] = sticks[6];
+                prevSticks[7] = sticks[7];
+            }
         }
 
         if (extra2)
         {
-            prevSticks[8] = sticks[8] = this.extra2X.interpolate(tick).floatValue();
-            prevSticks[9] = sticks[9] = this.extra2Y.interpolate(tick).floatValue();
+            sticks[8] = this.extra2X.interpolate(tick).floatValue();
+            sticks[9] = this.extra2Y.interpolate(tick).floatValue();
+
+            if (paused)
+            {
+                prevSticks[8] = sticks[8];
+                prevSticks[9] = sticks[9];
+            }
         }
 
         entity.setEquipmentStack(EquipmentSlot.MAINHAND, this.mainHand.interpolate(tick));
