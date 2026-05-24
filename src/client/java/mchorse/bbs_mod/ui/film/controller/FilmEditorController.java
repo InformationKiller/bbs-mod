@@ -69,7 +69,7 @@ public class FilmEditorController extends BaseFilmController
     }
 
     @Override
-    protected void applyReplay(Replay replay, int ticks, IEntity entity)
+    protected void applyReplay(Replay replay, int ticks, IEntity entity, boolean paused)
     {
         List<String> groups = this.controller.getRecordingGroups();
         boolean isPlaying = this.controller.isPlaying();
@@ -77,7 +77,7 @@ public class FilmEditorController extends BaseFilmController
 
         if (entity != this.controller.getControlled() || (this.controller.isRecording() && this.controller.getRecordingCountdown() <= 0 && groups != null))
         {
-            replay.keyframes.apply(ticks, entity, entity == this.controller.getControlled() ? groups : null);
+            replay.keyframes.apply(ticks, entity, entity == this.controller.getControlled() ? groups : null, paused);
             replay.applyClientActions(ticks, entity, this.film);
         }
 
@@ -171,7 +171,7 @@ public class FilmEditorController extends BaseFilmController
                     this.renderOnion(replay, pose.getKeyframes().indexOf(segment.a), -1, pose, onionSkin.preColor.get(), onionSkin.preFrames.get(), context, isPlaying, entity);
                     this.renderOnion(replay, pose.getKeyframes().indexOf(segment.b), 1, pose, onionSkin.postColor.get(), onionSkin.postFrames.get(), context, isPlaying, entity);
 
-                    replay.keyframes.apply(ticks, entity);
+                    replay.keyframes.apply(ticks, entity, true);
                     float tick = ticks + this.getTransition(entity, context.tickDelta());
                     Form form = entity.getForm();
                     replay.properties.applyProperties(form, tick);
@@ -206,7 +206,7 @@ public class FilmEditorController extends BaseFilmController
             }
 
             int tick1 = (int) keyframe.getTick();
-            replay.keyframes.apply(tick1, entity);
+            replay.keyframes.apply(tick1, entity, true);
             float tick = (int) keyframe.getTick();
             Form form = entity.getForm();
             replay.properties.applyProperties(form, tick);
