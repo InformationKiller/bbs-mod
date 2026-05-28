@@ -6,8 +6,9 @@ import mchorse.bbs_mod.l10n.L10n;
 import mchorse.bbs_mod.l10n.keys.IKey;
 import mchorse.bbs_mod.settings.Settings;
 import mchorse.bbs_mod.settings.value.ValueKeyCombo;
-import mchorse.bbs_mod.settings.values.base.BaseValue;
 import mchorse.bbs_mod.settings.values.core.ValueGroup;
+import mchorse.bbs_mod.settings.values.numeric.ValueInt;
+import mchorse.bbs_mod.settings.values.base.BaseValue;
 import mchorse.bbs_mod.ui.UIKeys;
 import mchorse.bbs_mod.ui.framework.UIContext;
 import mchorse.bbs_mod.ui.framework.elements.UIElement;
@@ -22,7 +23,9 @@ import mchorse.bbs_mod.ui.utils.icons.Icon;
 import mchorse.bbs_mod.ui.utils.icons.Icons;
 import mchorse.bbs_mod.utils.Direction;
 import mchorse.bbs_mod.utils.colors.Colors;
+import mchorse.bbs_mod.utils.interps.Interpolations;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -182,6 +185,26 @@ public class UISettingsOverlayPanel extends UIOverlayPanel
                 }
 
                 UISectionHeader header = new UISectionHeader(this, category);
+
+                /* Populate interpolation labels for default interpolation settings on client side */
+                if (value == BBSSettings.defaultInterpolation || value == BBSSettings.defaultPathInterpolation)
+                {
+                    try
+                    {
+                        List<IKey> interpKeys = new ArrayList<>();
+
+                        for (String k : Interpolations.MAP.keySet())
+                        {
+                            interpKeys.add(UIKeys.C_INTERPOLATION.get(k));
+                        }
+
+                        if (value instanceof ValueInt)
+                        {
+                            ((ValueInt) value).modes(interpKeys.toArray(new IKey[0]));
+                        }
+                    }
+                    catch (Throwable ignored) {}
+                }
 
                 if (!first)
                 {

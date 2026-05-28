@@ -39,6 +39,7 @@ import mchorse.bbs_mod.ui.UIKeys;
 import mchorse.bbs_mod.ui.film.UIClipsPanel;
 import mchorse.bbs_mod.ui.film.UIFilmPanel;
 import mchorse.bbs_mod.ui.film.clips.renderer.IUIClipRenderer;
+import mchorse.bbs_mod.ui.film.replays.UIReplaysEditor.ReplayCategory;
 import mchorse.bbs_mod.ui.film.replays.overlays.UIAnimationImportOverlayPanel;
 import mchorse.bbs_mod.ui.film.replays.overlays.UIAnimationToPoseOverlayPanel;
 import mchorse.bbs_mod.ui.film.replays.overlays.UIKeyframeSheetFilterOverlayPanel;
@@ -106,6 +107,7 @@ public class UIReplaysEditor extends UIElement {
     private boolean propertiesVisible = true;
     private Set<String> keys = new LinkedHashSet<>();
     private final Map<String, Set<String>> expandedPoseTabsByReplay = new HashMap<>();
+    private final Map<ReplayCategory, Double> categoryScroll = new HashMap<>();
 
     public enum ReplayCategory {
         PLAYER(
@@ -397,8 +399,11 @@ public class UIReplaysEditor extends UIElement {
     }
 
     private void setCategory(ReplayCategory c) {
+        this.savePoseTabState(this.replay);
+        if (this.keyframeEditor != null) this.categoryScroll.put(this.category, this.keyframeEditor.view.getDopeSheet().getYAxis().getScroll());
         this.category = c;
         this.updateChannelsList();
+        if (this.keyframeEditor != null) this.keyframeEditor.view.getDopeSheet().getYAxis().setScroll(this.categoryScroll.getOrDefault(this.category, 0.0));
     }
 
     public ReplayCategory getCategory() {
@@ -418,8 +423,9 @@ public class UIReplaysEditor extends UIElement {
     }
 
     public void setFilm(Film film) {
-        this.savePoseTabState(this.replay);
+        // this.savePoseTabState(this.replay);
         this.expandedPoseTabsByReplay.clear();
+        this.categoryScroll.clear();
         this.film = film;
         this.filmPanel.getController().orbit.reset();
 
@@ -799,7 +805,7 @@ public class UIReplaysEditor extends UIElement {
             return;
         }
 
-        this.expandedPoseTabsByReplay.put(replay.getId(), this.keyframeEditor.view.getDopeSheet().getExpandedPoseTabIds());
+        if (this.category == ReplayCategory.POSE) this.expandedPoseTabsByReplay.put(replay.getId(), this.keyframeEditor.view.getDopeSheet().getExpandedPoseTabIds());
     }
 
     /**

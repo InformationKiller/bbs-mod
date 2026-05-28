@@ -1020,6 +1020,11 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
         int my = y + (int) this.trackHeight / 2;
         int lx = area.x;
 
+        if (this.keyframes.getGraph() instanceof UIKeyframeGraph graph && graph.sheet == sheet)
+        {
+            context.batcher.gradientHBox(lx, y, lx + w, y + (int) this.trackHeight, Colors.setA(sheet.color, 0.65F), Colors.setA(sheet.color, 0.08F));
+        }
+
         if (hover)
         {
             context.batcher.gradientHBox(lx, y, lx + w, y + (int) this.trackHeight, Colors.setA(sheet.color, 0.2F), Colors.setA(sheet.color, 0.04F));
@@ -1390,6 +1395,13 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
     {
         extra.putDouble("track_height", this.trackHeight);
         extra.putDouble("scroll", this.dopeSheet.getScroll());
+
+        if (this.keyframes.getGraph() instanceof UIKeyframeGraph graph)
+        {
+            extra.putString("current_graph", graph.sheet.id);
+
+            graph.saveState(extra);
+        }
     }
 
     @Override
@@ -1397,5 +1409,20 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
     {
         this.setTrackHeight(extra.getDouble("track_height"));
         this.dopeSheet.setScroll(extra.getDouble("scroll"));
+
+        String current = extra.getString("current_graph", "");
+        if (!current.equals(""))
+        {
+            for (UIKeyframeSheet sheet : this.sheets)
+            {
+                if (current.equals(sheet.id) && this.isVisible(sheet) && KeyframeFactories.isNumeric(sheet.channel.getFactory()))
+                {
+                    this.keyframes.editSheet(sheet);
+                    this.keyframes.getGraph().restoreState(extra);
+
+                    break;
+                }
+            }
+        }
     }
 }

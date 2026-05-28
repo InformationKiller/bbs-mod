@@ -51,6 +51,8 @@ public class BBSSettings {
 	public static ValueBoolean transformLocalDefault;
 	public static ValueBoolean transformHotkeys3dRay;
 	public static ValueFloat trackballSensitivity;
+    public static ValueInt defaultInterpolation;
+    public static ValueInt defaultPathInterpolation;
 
 	public static ValueBoolean enableCursorRendering;
 	public static ValueBoolean enableMouseButtonRendering;
@@ -489,6 +491,8 @@ public class BBSSettings {
 		editorRewind = builder.getBoolean("rewind", true);
 		editorHorizontalClipEditor = builder.getBoolean("horizontal_clip_editor", true);
 		editorMinutesBackup = builder.getBoolean("minutes_backup", true);
+        defaultInterpolation = builder.getInt("default_interpolation", 0);
+        defaultPathInterpolation = builder.getInt("default_path_interpolation", 34);
 		editorPreviewSizeMode = builder.getInt("preview_size_mode", 0, 0, 2);
 		editorPreviewCustomWidth = builder.getInt("preview_custom_width", 1280, 2, 16384);
 		editorPreviewCustomHeight = builder.getInt("preview_custom_height", 720, 2, 16384);

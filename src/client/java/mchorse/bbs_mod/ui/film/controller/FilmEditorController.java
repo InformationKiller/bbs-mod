@@ -69,7 +69,7 @@ public class FilmEditorController extends BaseFilmController
     }
 
     @Override
-    protected void applyReplay(Replay replay, int ticks, IEntity entity, boolean paused)
+    protected void applyReplay(Replay replay, int ticks, IEntity entity)
     {
         List<String> groups = this.controller.getRecordingGroups();
         boolean isPlaying = this.controller.isPlaying();
@@ -77,7 +77,7 @@ public class FilmEditorController extends BaseFilmController
 
         if (entity != this.controller.getControlled() || (this.controller.isRecording() && this.controller.getRecordingCountdown() <= 0 && groups != null))
         {
-            replay.keyframes.apply(ticks, entity, entity == this.controller.getControlled() ? groups : null, paused);
+            replay.keyframes.apply(ticks, entity, entity == this.controller.getControlled() ? groups : null, !this.controller.panel.getRunner().isRunning());
             replay.applyClientActions(ticks, entity, this.film);
         }
 

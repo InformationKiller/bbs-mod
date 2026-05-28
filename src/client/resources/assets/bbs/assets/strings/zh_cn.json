@@ -1342,5 +1342,10 @@
     "bbs.ui.video_settings.play_sound_after_export": "导出后播放声音",
     "bbs.ui.video_settings.play_sound_after_export-tooltip": "启用后，渲染完成时会播放提示音。",
     "interpolations.bspline": "B样条曲线",
-	"bbs.ui.camera.panels.curves.chroma_sky_color": "色度天空颜色"
+	"bbs.ui.camera.panels.curves.chroma_sky_color": "色度天空颜色",
+
+    "bbs.config.editor.default_interpolation": "默认插值",
+    "bbs.config.editor.default_interpolation-comment": "创建新关键帧时默认使用的插值 (影响姿势/关键帧工作流)",
+    "bbs.config.editor.default_path_interpolation": "默认路径插值",
+    "bbs.config.editor.default_path_interpolation-comment": "创建路径剪辑时默认使用的插值 (作用于点和角度)"
 }

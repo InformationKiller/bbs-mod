@@ -560,7 +560,7 @@ public abstract class BaseFilmController
                 ticks = replay.getTick(ticks);
 
                 this.updateEntityAndForm(entity, ticks);
-                this.applyReplay(replay, ticks, entity, this.paused);
+                this.applyReplay(replay, ticks, entity);
 
                 Map<String, Integer> actors = this.getActors();
 
@@ -671,9 +671,9 @@ public abstract class BaseFilmController
         }
     }
 
-    protected void applyReplay(Replay replay, int ticks, IEntity entity, boolean paused)
+    protected void applyReplay(Replay replay, int ticks, IEntity entity)
     {
-        replay.keyframes.apply(ticks, entity, paused);
+        replay.keyframes.apply(ticks, entity, false);
         replay.applyClientActions(ticks, entity, this.film);
     }
 

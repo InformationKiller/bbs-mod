@@ -171,6 +171,8 @@ public abstract class UIBaseMenu
             inputRenderer.keyPressed(this.context, key);
         }
 
+        if (key == GLFW.GLFW_KEY_KP_ENTER) key = GLFW.GLFW_KEY_ENTER;
+
         this.context.setKeyEvent(key, scanCode, action);
 
         IUIElement element = this.root.keyPressed(this.context);
