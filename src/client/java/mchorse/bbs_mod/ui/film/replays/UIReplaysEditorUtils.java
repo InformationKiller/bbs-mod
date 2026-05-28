@@ -189,12 +189,12 @@ public class UIReplaysEditorUtils
         String path = FormUtils.getPath(form);
         String boneKey = PerLimbService.toPoseBoneKey(path, bone);
 
+        IUIKeyframeGraph graph = keyframeEditor.view.getGraph();
+        Keyframe selected = graph.getSelected();
+        UIKeyframeSheet currentSheet = selected != null ? graph.getSheet(selected) : null;
+
         if (insert)
         {
-            IUIKeyframeGraph graph = keyframeEditor.view.getGraph();
-            Keyframe selected = graph.getSelected();
-            UIKeyframeSheet currentSheet = selected != null ? graph.getSheet(selected) : null;
-
             if (isPoseSheet(currentSheet, path))
             {
                 return;
@@ -204,7 +204,7 @@ public class UIReplaysEditorUtils
             return;
         }
 
-        UIKeyframeSheet sheet = resolveBoneSheet(keyframeEditor, boneKey, path);
+        UIKeyframeSheet sheet = isPoseSheet(currentSheet, path) ? currentSheet : resolveBoneSheet(keyframeEditor, boneKey, path);
 
         if (sheet != null)
         {
