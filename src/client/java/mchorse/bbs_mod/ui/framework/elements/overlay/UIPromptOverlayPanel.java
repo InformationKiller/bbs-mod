@@ -1,10 +1,13 @@
 package mchorse.bbs_mod.ui.framework.elements.overlay;
 
 import mchorse.bbs_mod.l10n.keys.IKey;
+import mchorse.bbs_mod.ui.framework.UIContext;
 import mchorse.bbs_mod.ui.framework.elements.UIElement;
 import mchorse.bbs_mod.ui.framework.elements.input.text.UITextbox;
 
 import java.util.function.Consumer;
+
+import org.lwjgl.glfw.GLFW;
 
 public class UIPromptOverlayPanel extends UIMessageBarOverlayPanel
 {
@@ -22,8 +25,7 @@ public class UIPromptOverlayPanel extends UIMessageBarOverlayPanel
         super(title, message);
 
         this.callback = callback;
-        this.text = new UITextbox(s -> this.confirm());
-        this.text.delayedInput();
+        this.text = new UITextbox(null);
 
         this.bar.prepend(this.text);
     }
@@ -46,5 +48,18 @@ public class UIPromptOverlayPanel extends UIMessageBarOverlayPanel
         {
             this.callback.accept(this.text.getText());
         }
+    }
+
+    @Override
+    public boolean subKeyPressed(UIContext context)
+    {
+        if (this.text.isFocused() && context.isPressed(GLFW.GLFW_KEY_ENTER))
+        {
+            this.confirm();
+
+            return true;
+        }
+
+        return super.subKeyPressed(context);
     }
 }
