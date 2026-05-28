@@ -1360,7 +1360,7 @@ public class UIKeyframes extends UIElement
         state.extra.putDouble("x_max", this.xAxis.getMaxValue());
         this.dopeSheet.saveState(state.extra);
 
-        for (UIKeyframeSheet property : this.dopeSheet.getSheets())
+        for (UIKeyframeSheet property : this.currentGraph.getSheets())
         {
             state.selected.add(new ArrayList<>(property.selection.getIndices()));
         }
@@ -1373,7 +1373,7 @@ public class UIKeyframes extends UIElement
         this.dopeSheet.restoreState(state.extra);
         this.xAxis.view(state.extra.getDouble("x_min"), state.extra.getDouble("x_max"));
 
-        List<UIKeyframeSheet> properties = this.dopeSheet.getSheets();
+        List<UIKeyframeSheet> properties = this.currentGraph.getSheets();
 
         for (int i = 0; i < properties.size(); i++)
         {
@@ -1384,7 +1384,7 @@ public class UIKeyframes extends UIElement
             }
         }
 
-        this.dopeSheet.pickSelected();
+        this.currentGraph.pickSelected();
     }
 
     public void copyViewport(UIKeyframes lastEditor)
