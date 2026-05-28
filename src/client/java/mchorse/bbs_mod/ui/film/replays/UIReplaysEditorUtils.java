@@ -494,40 +494,22 @@ public class UIReplaysEditorUtils
         String path = FormUtils.getPath(form);
         String boneKey = PerLimbService.toPoseBoneKey(path, bone);
 
+        IUIKeyframeGraph graph = keyframeEditor.view.getGraph();
+        Keyframe selected = graph.getSelected();
+        UIKeyframeSheet currentSheet = selected != null ? graph.getSheet(selected) : null;
+
         if (insert)
         {
-            UIKeyframeSheet sheet = resolveBoneSheet(keyframeEditor, boneKey, path);
-
-            if (sheet == null)
-            {
-                return;
-            }
-
-            /* When the per-limb bone track is empty/absent, resolveBoneSheet falls back
-             * to the form's pose track. Insert there instead of doing nothing: select
-             * the keyframe already at the cursor, or add a fresh one. */
-            if (isPoseSheet(sheet, path))
-            {
-                insertIntoPoseSheet(keyframeEditor, cursor, bone, sheet);
-                return;
-            }
-
-            /* Non-empty per-limb track: keep suppressing per-limb inserts while a pose
-             * keyframe of this form is the active selection. */
-            IUIKeyframeGraph graph = keyframeEditor.view.getGraph();
-            Keyframe selected = graph.getSelected();
-            UIKeyframeSheet currentSheet = selected != null ? graph.getSheet(selected) : null;
-
             if (isPoseSheet(currentSheet, path))
             {
                 return;
             }
 
-            pickProperty(keyframeEditor, cursor, bone, sheet, true);
+            pickProperty(keyframeEditor, cursor, bone, boneKey, true);
             return;
         }
 
-        UIKeyframeSheet sheet = resolveBoneSheet(keyframeEditor, boneKey, path);
+        UIKeyframeSheet sheet = isPoseSheet(currentSheet, path) ? currentSheet : resolveBoneSheet(keyframeEditor, boneKey, path);
 
         if (sheet != null)
         {

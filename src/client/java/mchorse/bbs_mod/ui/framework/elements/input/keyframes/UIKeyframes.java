@@ -1396,8 +1396,8 @@ public class UIKeyframes extends UIElement
 
     public void applyState(KeyframeState state)
     {
-        this.xAxis.view(state.extra.getDouble("x_min"), state.extra.getDouble("x_max"));
         this.dopeSheet.restoreState(state.extra);
+        this.xAxis.view(state.extra.getDouble("x_min"), state.extra.getDouble("x_max"));
 
         List<UIKeyframeSheet> properties = this.dopeSheet.getSheets();
 
