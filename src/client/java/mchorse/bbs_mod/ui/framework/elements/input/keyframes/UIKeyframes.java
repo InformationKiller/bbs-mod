@@ -1358,9 +1358,9 @@ public class UIKeyframes extends UIElement
 
         state.extra.putDouble("x_min", this.xAxis.getMinValue());
         state.extra.putDouble("x_max", this.xAxis.getMaxValue());
-        this.currentGraph.saveState(state.extra);
+        this.dopeSheet.saveState(state.extra);
 
-        for (UIKeyframeSheet property : this.currentGraph.getSheets())
+        for (UIKeyframeSheet property : this.dopeSheet.getSheets())
         {
             state.selected.add(new ArrayList<>(property.selection.getIndices()));
         }
@@ -1371,9 +1371,9 @@ public class UIKeyframes extends UIElement
     public void applyState(KeyframeState state)
     {
         this.xAxis.view(state.extra.getDouble("x_min"), state.extra.getDouble("x_max"));
-        this.currentGraph.restoreState(state.extra);
+        this.dopeSheet.restoreState(state.extra);
 
-        List<UIKeyframeSheet> properties = this.currentGraph.getSheets();
+        List<UIKeyframeSheet> properties = this.dopeSheet.getSheets();
 
         for (int i = 0; i < properties.size(); i++)
         {
@@ -1384,7 +1384,7 @@ public class UIKeyframes extends UIElement
             }
         }
 
-        this.currentGraph.pickSelected();
+        this.dopeSheet.pickSelected();
     }
 
     public void copyViewport(UIKeyframes lastEditor)

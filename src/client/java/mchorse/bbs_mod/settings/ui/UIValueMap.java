@@ -19,6 +19,7 @@ import mchorse.bbs_mod.ui.framework.elements.buttons.UIButton;
 import mchorse.bbs_mod.ui.framework.elements.buttons.UICirculate;
 import mchorse.bbs_mod.ui.framework.elements.buttons.UIIcon;
 import mchorse.bbs_mod.ui.framework.elements.buttons.UIToggle;
+import mchorse.bbs_mod.ui.framework.elements.context.UIInterpolationContextMenu;
 import mchorse.bbs_mod.ui.framework.elements.input.UIColor;
 import mchorse.bbs_mod.ui.framework.elements.input.UIKeybind;
 import mchorse.bbs_mod.ui.framework.elements.input.UITexturePicker;
@@ -35,6 +36,9 @@ import mchorse.bbs_mod.ui.utils.UI;
 import mchorse.bbs_mod.ui.utils.icons.Icons;
 import mchorse.bbs_mod.utils.FFMpegUtils;
 import mchorse.bbs_mod.utils.OS;
+import mchorse.bbs_mod.utils.interps.IInterp;
+import mchorse.bbs_mod.utils.interps.Interpolation;
+import mchorse.bbs_mod.utils.interps.Interpolations;
 import mchorse.bbs_mod.utils.keyframes.KeyframeShape;
 
 import java.io.File;
@@ -80,6 +84,75 @@ public class UIValueMap
 
         register(ValueInt.class, (value, ui) ->
         {
+            if (value == BBSSettings.defaultInterpolation || value == BBSSettings.defaultPathInterpolation)
+            {
+                List<IKey> labels = value.getLabels();
+                int currentIndex = value.get();
+                IKey label = UIKeys.CAMERA_PANELS_INTERPOLATION;
+
+                if (labels != null && !labels.isEmpty())
+                {
+                    if (currentIndex < 0 || currentIndex >= labels.size())
+                    {
+                        currentIndex = 0;
+                    }
+
+                    label = labels.get(currentIndex);
+                }
+
+                UIButton button = new UIButton(label, (b) ->
+                {
+                    Interpolation interpolation = new Interpolation("default", Interpolations.MAP);
+                    int index = value.get();
+                    int i = 0;
+
+                    for (IInterp interp : Interpolations.MAP.values())
+                    {
+                        if (i == index)
+                        {
+                            interpolation.setInterp(interp);
+                            break;
+                        }
+
+                        i++;
+                    }
+
+                    UIInterpolationContextMenu menu = new UIInterpolationContextMenu(interpolation).callback(() ->
+                    {
+                        IInterp selected = interpolation.getInterp();
+                        int idx = 0;
+
+                        for (IInterp interp : Interpolations.MAP.values())
+                        {
+                            if (interp == selected || interp.equals(selected))
+                            {
+                                value.set(idx);
+
+                                if (labels != null && !labels.isEmpty())
+                                {
+                                    if (idx < 0 || idx >= labels.size())
+                                    {
+                                        idx = 0;
+                                    }
+
+                                    b.label = labels.get(idx);
+                                }
+
+                                break;
+                            }
+
+                            idx++;
+                        }
+                    });
+
+                    ui.getContext().replaceContextMenu(menu);
+                });
+
+                button.w(90);
+
+                return Arrays.asList(UIValueFactory.column(button, value));
+            }
+
             if (value == BBSSettings.editorPreviewSizeMode)
             {
                 UICirculate button = new UICirculate(null);

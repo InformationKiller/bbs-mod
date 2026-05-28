@@ -1351,5 +1351,10 @@
     "bbs.ui.importer.structure": "Structure (.nbt)",
     "bbs.ui.model_blocks.light_level": "Light level",
 
-	"bbs.ui.camera.panels.curves.chroma_sky_color": "Chroma sky color"
+	"bbs.ui.camera.panels.curves.chroma_sky_color": "Chroma sky color",
+
+    "bbs.config.editor.default_interpolation": "Default interpolation",
+    "bbs.config.editor.default_interpolation-comment": "The interpolation type used by default when new keyframes are created (affects pose/keyframe workflow)",
+    "bbs.config.editor.default_path_interpolation": "Default path interpolation",
+    "bbs.config.editor.default_path_interpolation-comment": "The interpolation type used by default when a new Path clip is created (applies to Point and Angle interpolation)"
 }
