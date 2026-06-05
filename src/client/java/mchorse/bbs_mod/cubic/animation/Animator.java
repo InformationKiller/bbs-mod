@@ -71,6 +71,11 @@ public class Animator implements IAnimator
     {
         this.model = model;
 
+        if (this.idle == null)
+        {
+            this.idle = new ActionPlayback(Animation.EMPTY, actions.getConfig("idle"), true, 1);
+        }
+
         this.idle = this.createAction(this.idle, actions.getConfig("idle"), true);
         this.running = this.createAction(this.running, actions.getConfig("running"), true);
         this.sprinting = this.createAction(this.sprinting, actions.getConfig("sprinting"), true);
@@ -125,6 +130,7 @@ public class Animator implements IAnimator
         }
 
         Animation action = animations.get(config.name);
+        if (old == this.idle && action == null) action = Animation.EMPTY;
 
         /* If given action is missing, then omit creation of ActionPlayback */
         if (action == null)
@@ -244,7 +250,7 @@ public class Animator implements IAnimator
         {
             if (target.isSneaking())
             {
-                this.setActiveAction(!moves ? this.crouchingIdle : this.crouching);
+                this.setActiveAction(!moves ? this.crouchingIdle : (this.crouching == null ? this.running : this.crouching));
             }
             else if (!target.isOnGround() && velocity.y < 0 && target.getFallDistance() > 1.25)
             {
@@ -252,7 +258,7 @@ public class Animator implements IAnimator
             }
             else if (target.isSprinting() && this.sprinting != null)
             {
-                this.setActiveAction(this.sprinting);
+                this.setActiveAction(this.sprinting == null ? this.running : this.sprinting);
             }
             else
             {
@@ -305,12 +311,14 @@ public class Animator implements IAnimator
      */
     public void setActiveAction(ActionPlayback action)
     {
-        if (this.active == action || action == null)
+        if (this.active != null && action != null && action.priority < this.active.priority)
         {
             return;
         }
 
-        if (this.active != null && action.priority < this.active.priority)
+        if (action == null) action = this.idle;
+
+        if (this.active == action)
         {
             return;
         }

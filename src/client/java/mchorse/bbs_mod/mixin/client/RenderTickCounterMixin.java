@@ -5,6 +5,8 @@ import mchorse.bbs_mod.BBSSettings;
 import mchorse.bbs_mod.client.BBSRendering;
 import mchorse.bbs_mod.utils.VideoRecorder;
 import net.minecraft.client.render.RenderTickCounter;
+
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,6 +25,10 @@ public class RenderTickCounterMixin
     @Shadow
     private long prevTimeMillis;
 
+    @Shadow
+    @Final
+	private float tickTime;
+
     private int heldFrames;
 
     @Inject(method = "beginRenderTick", at = @At("HEAD"), cancellable = true)
@@ -39,7 +45,7 @@ public class RenderTickCounterMixin
 
             if (this.heldFrames == 0)
             {
-                this.lastFrameDuration = 20F / (float) BBSRendering.getVideoFrameRate();
+                this.lastFrameDuration = 1000F / (float) BBSRendering.getVideoFrameRate() / this.tickTime;
                 this.prevTimeMillis = timeMillis;
                 this.tickDelta += this.lastFrameDuration;
 
@@ -54,6 +60,7 @@ public class RenderTickCounterMixin
             }
             else
             {
+                this.lastFrameDuration = 0F;
                 BBSRendering.canRender = false;
 
                 info.setReturnValue(0);

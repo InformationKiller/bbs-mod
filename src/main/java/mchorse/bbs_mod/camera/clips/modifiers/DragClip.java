@@ -114,6 +114,8 @@ public class DragClip extends ComponentClip
         {
             context.applyUnderneath(context.ticks, context.transition, this.current);
 
+            factor = 1F - (float) Math.pow(1f - factor, context.lastFrameDuration * this.rate.get());
+
             if (isX) position.point.x = this.prevX = Lerps.lerp(this.prevX, this.current.point.x, factor);
             if (isY) position.point.y = this.prevY = Lerps.lerp(this.prevY, this.current.point.y, factor);
             if (isZ) position.point.z = this.prevZ = Lerps.lerp(this.prevZ, this.current.point.z, factor);
