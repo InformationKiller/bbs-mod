@@ -173,9 +173,9 @@ public class ReplayKeyframes extends ValueGroup
             this.fall.insert(tick, (double) entity.getFallDistance());
         }
 
-        this.sneaking.insert(tick, entity.isSneaking() ? 1D : 0D);
-        this.sprinting.insert(tick, entity.isSprinting() ? 1D : 0D);
-        this.grounded.insert(tick, entity.isOnGround() ? 1D : 0D);
+        this.sneaking.get(this.sneaking.insert(tick, entity.isSneaking() ? 1D : 0D)).getInterpolation().setInterp(Interpolations.CONST);
+        this.sprinting.get(this.sprinting.insert(tick, entity.isSprinting() ? 1D : 0D)).getInterpolation().setInterp(Interpolations.CONST);
+        this.grounded.get(this.grounded.insert(tick, entity.isOnGround() ? 1D : 0D)).getInterpolation().setInterp(Interpolations.CONST);
         this.damage.insert(tick, (double) entity.getHurtTimer());
 
         if (rotation)

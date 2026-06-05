@@ -6,6 +6,7 @@ import mchorse.bbs_mod.camera.clips.misc.AudioClientClip;
 import mchorse.bbs_mod.camera.data.Position;
 import mchorse.bbs_mod.utils.clips.Clip;
 import mchorse.bbs_mod.utils.clips.Clips;
+import net.minecraft.client.MinecraftClient;
 
 public abstract class CameraWorkCameraController implements ICameraController
 {
@@ -43,6 +44,7 @@ public abstract class CameraWorkCameraController implements ICameraController
 
         this.context.clipData.clear();
         this.context.setup(ticks, transition);
+        this.context.lastFrameDuration = MinecraftClient.getInstance().getLastFrameDuration() * MinecraftClient.getInstance().renderTickCounter.tickTime * 0.001F;
 
         for (Clip clip : this.context.clips.getClips(ticks))
         {

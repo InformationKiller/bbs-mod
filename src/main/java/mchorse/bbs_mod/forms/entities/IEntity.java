@@ -1,6 +1,8 @@
 package mchorse.bbs_mod.forms.entities;
 
 import mchorse.bbs_mod.forms.forms.Form;
+import mchorse.bbs_mod.math.molang.MolangContext;
+import mchorse.bbs_mod.math.molang.MolangParser;
 import mchorse.bbs_mod.utils.AABB;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EquipmentSlot;
@@ -188,4 +190,6 @@ public interface IEntity
     public Vec3d lerpVelocity(float transition);
 
     public boolean isUsingRiptide();
+
+    public MolangContext getMolangContext();
 }

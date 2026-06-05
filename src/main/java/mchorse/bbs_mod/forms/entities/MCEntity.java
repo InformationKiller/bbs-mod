@@ -1,6 +1,7 @@
 package mchorse.bbs_mod.forms.entities;
 
 import mchorse.bbs_mod.forms.forms.Form;
+import mchorse.bbs_mod.math.molang.MolangContext;
 import mchorse.bbs_mod.morphing.Morph;
 import mchorse.bbs_mod.utils.AABB;
 import net.minecraft.entity.Entity;
@@ -23,6 +24,8 @@ public class MCEntity implements IEntity
 
     private float[] extraVariables = new float[10];
     private float[] prevExtraVariables = new float[10];
+
+    private MolangContext molang = new MolangContext();
 
     public MCEntity(Entity mcEntity)
     {
@@ -541,5 +544,11 @@ public class MCEntity implements IEntity
         }
 
         return false;
+    }
+
+    @Override
+    public MolangContext getMolangContext()
+    {
+        return this.molang;
     }
 }

@@ -4,6 +4,7 @@ import mchorse.bbs_mod.forms.entities.IEntity;
 import mchorse.bbs_mod.math.molang.MolangParser;
 import mchorse.bbs_mod.utils.MathUtils;
 import mchorse.bbs_mod.utils.interps.Lerps;
+import net.minecraft.client.MinecraftClient;
 
 public class MolangHelper
 {
@@ -36,6 +37,8 @@ public class MolangHelper
 
     public static void setMolangVariables(MolangParser parser, IEntity target, float frame, float transition)
     {
+        parser.current = target == null ? null : target.getMolangContext();
+
         double dx = 0;
         double dz = 0;
         double yawSpeed = 0;
@@ -111,5 +114,7 @@ public class MolangHelper
         parser.setValue("query.limb_swing", limbSwing);
         parser.setValue("query.limb_swing_amount", limbSwingAmount);
         parser.setValue("query.age", age);
+
+        parser.setValue("query.delta_time", MinecraftClient.getInstance().getLastFrameDuration() * MinecraftClient.getInstance().renderTickCounter.tickTime * 0.001F);
     }
 }

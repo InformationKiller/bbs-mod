@@ -51,6 +51,8 @@ public abstract class ClipContext <T extends Clip, E>
      */
     public double velocity;
 
+    public double lastFrameDuration;
+
     public final ClipData clipData = new ClipData();
 
     public ClipContext setup(int ticks, float transition)

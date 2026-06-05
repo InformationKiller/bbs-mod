@@ -10,6 +10,8 @@ import java.util.Map;
 
 public class Animation implements IMapSerializable
 {
+    public static final Animation EMPTY = new Animation("", new MolangParser());
+
     public final String id;
     public final MolangParser parser;
 

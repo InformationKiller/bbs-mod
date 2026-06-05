@@ -1,6 +1,7 @@
 package mchorse.bbs_mod.forms.entities;
 
 import mchorse.bbs_mod.forms.forms.Form;
+import mchorse.bbs_mod.math.molang.MolangContext;
 import mchorse.bbs_mod.utils.AABB;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EquipmentSlot;
@@ -52,6 +53,8 @@ public class StubEntity implements IEntity
 
     private LimbAnimator limbAnimator = new LimbAnimator();
     private final Map<EquipmentSlot, ItemStack> items = new HashMap<>();
+
+    private MolangContext molang = new MolangContext();
 
     public StubEntity(World world)
     {
@@ -508,5 +511,11 @@ public class StubEntity implements IEntity
     public boolean isUsingRiptide()
     {
         return false;
+    }
+
+    @Override
+    public MolangContext getMolangContext()
+    {
+        return this.molang;
     }
 }

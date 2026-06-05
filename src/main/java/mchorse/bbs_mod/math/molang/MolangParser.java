@@ -4,11 +4,14 @@ import mchorse.bbs_mod.data.types.BaseType;
 import mchorse.bbs_mod.math.Constant;
 import mchorse.bbs_mod.math.IExpression;
 import mchorse.bbs_mod.math.MathBuilder;
+import mchorse.bbs_mod.math.Negate;
+import mchorse.bbs_mod.math.Negative;
 import mchorse.bbs_mod.math.Variable;
 import mchorse.bbs_mod.math.molang.expressions.MolangAssignment;
 import mchorse.bbs_mod.math.molang.expressions.MolangExpression;
 import mchorse.bbs_mod.math.molang.expressions.MolangMultiStatement;
 import mchorse.bbs_mod.math.molang.expressions.MolangValue;
+import mchorse.bbs_mod.math.molang.expressions.MolangVariable;
 import mchorse.bbs_mod.math.molang.functions.AcosDegrees;
 import mchorse.bbs_mod.math.molang.functions.AsinDegrees;
 import mchorse.bbs_mod.math.molang.functions.Atan2Degrees;
@@ -34,6 +37,8 @@ public class MolangParser extends MathBuilder
 
     private MolangMultiStatement currentStatement;
     private boolean registerAsGlobals;
+
+    public MolangContext current;
 
     public MolangParser()
     {
@@ -111,7 +116,7 @@ public class MolangParser extends MathBuilder
      * Interactively return a new variable
      */
     @Override
-    protected Variable getVariable(String name)
+    public Variable getVariable(String name)
     {
         if (name.charAt(1) == '.')
         {
@@ -127,6 +132,11 @@ public class MolangParser extends MathBuilder
 
         MolangMultiStatement currentStatement = this.currentStatement;
         Variable variable = currentStatement == null ? null : currentStatement.locals.get(name);
+
+        if (variable == null && name.startsWith("variable.") && current != null)
+        {
+            variable = current.get(name);
+        }
 
         if (variable == null)
         {
@@ -297,10 +307,14 @@ public class MolangParser extends MathBuilder
 
                 Variable variable = null;
 
-                if (!this.registerAsGlobals && !this.variables.containsKey(name) && !this.currentStatement.locals.containsKey(name))
+                if (!this.registerAsGlobals && !this.variables.containsKey(name) && !this.currentStatement.locals.containsKey(name) && name.startsWith("temp."))
                 {
                     variable = new Variable(name, 0);
                     this.currentStatement.locals.put(name, variable);
+                }
+                else if (name.startsWith("v.") || name.startsWith("variable."))
+                {
+                    variable = new MolangVariable(this, name);
                 }
                 else
                 {
@@ -343,5 +357,45 @@ public class MolangParser extends MathBuilder
     protected boolean isOperator(String s)
     {
         return super.isOperator(s) || s.equals("=");
+    }
+
+    /**
+     * Get value from an object.
+     * 
+     * This method is responsible for creating different sort of values 
+     * based on the input object. It can create constants, variables and 
+     * groups. 
+     */
+    @Override
+    public IExpression expressionFromObject(Object object) throws Exception
+    {
+        if (object instanceof String symbol && this.isVariable(symbol))
+        {
+            if (symbol.startsWith("-"))
+            {
+                symbol = symbol.substring(1);
+
+                return new Negative(this.expressionFromObject(symbol));
+            }
+            else
+            {
+                IExpression expression = null;
+
+                if (symbol.startsWith("v.") || symbol.startsWith("variable."))
+                {
+                    expression = new MolangVariable(this, symbol);
+                }
+                else
+                {
+                    expression = this.getVariable(symbol);
+                }
+
+                return expression;
+            }
+        }
+        else
+        {
+            return super.expressionFromObject(object);
+        }
     }
 }
