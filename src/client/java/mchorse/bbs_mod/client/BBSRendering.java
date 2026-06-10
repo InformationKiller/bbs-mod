@@ -397,7 +397,7 @@ public class BBSRendering
         Texture texture = getTexture();
 
         texture.bind();
-        texture.setFormat(BBSSettings.videoSettings.alpha.get() ? TextureFormat.RGBA_U8 : TextureFormat.RGB_U8);
+        texture.setFormat(BBSSettings.videoExportAlpha.get() ? TextureFormat.RGBA_U8 : TextureFormat.RGB_U8);
         texture.setSize(framebuffer.textureWidth, framebuffer.textureHeight);
         GL11.glCopyTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, 0, 0, framebuffer.textureWidth, framebuffer.textureHeight);
         texture.unbind();

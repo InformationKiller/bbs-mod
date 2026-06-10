@@ -186,26 +186,6 @@ public class UISettingsOverlayPanel extends UIOverlayPanel
 
                 UISectionHeader header = new UISectionHeader(this, category);
 
-                /* Populate interpolation labels for default interpolation settings on client side */
-                if (value == BBSSettings.defaultInterpolation || value == BBSSettings.defaultPathInterpolation)
-                {
-                    try
-                    {
-                        List<IKey> interpKeys = new ArrayList<>();
-
-                        for (String k : Interpolations.MAP.keySet())
-                        {
-                            interpKeys.add(UIKeys.C_INTERPOLATION.get(k));
-                        }
-
-                        if (value instanceof ValueInt)
-                        {
-                            ((ValueInt) value).modes(interpKeys.toArray(new IKey[0]));
-                        }
-                    }
-                    catch (Throwable ignored) {}
-                }
-
                 if (!first)
                 {
                     header.marginTop(16);

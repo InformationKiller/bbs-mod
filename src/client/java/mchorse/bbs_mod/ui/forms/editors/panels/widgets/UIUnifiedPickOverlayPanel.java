@@ -355,23 +355,7 @@ public class UIUnifiedPickOverlayPanel extends UIOverlayPanel
         if (this.mode == PickerMode.ITEM)
         {
             Item item = Registries.ITEM.get(new Identifier(id));
-            ItemStack selected;
-
-            if (this.itemStack != null && !this.itemStack.isEmpty() && this.itemStack.getItem() == item)
-            {
-                selected = this.itemStack.copy();
-            }
-            else
-            {
-                selected = new ItemStack(item);
-
-                selected.setCount(Math.max(1, this.itemStack.getCount()));
-
-                if (this.itemStack.hasCustomName())
-                {
-                    selected.setCustomName(this.itemStack.getName());
-                }
-            }
+            ItemStack selected = new ItemStack(item);
 
             this.acceptItem(selected);
             this.updateItemNbt();

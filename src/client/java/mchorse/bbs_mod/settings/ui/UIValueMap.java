@@ -42,6 +42,7 @@ import mchorse.bbs_mod.utils.keyframes.KeyframeShape;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.Collections;
@@ -85,6 +86,22 @@ public class UIValueMap
         {
             if (value == BBSSettings.defaultInterpolation || value == BBSSettings.defaultPathInterpolation)
             {
+                try
+                {
+                    List<IKey> interpKeys = new ArrayList<>();
+
+                    for (String k : Interpolations.MAP.keySet())
+                    {
+                        interpKeys.add(UIKeys.C_INTERPOLATION.get(k));
+                    }
+
+                    if (value instanceof ValueInt)
+                    {
+                        ((ValueInt) value).modes(interpKeys.toArray(new IKey[0]));
+                    }
+                }
+                catch (Throwable ignored) {}
+
                 List<IKey> labels = value.getLabels();
                 int currentIndex = value.get();
                 IKey label = UIKeys.CAMERA_PANELS_INTERPOLATION;
