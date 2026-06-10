@@ -389,7 +389,7 @@ public class ShaderCurves
         while (i < n && Character.isWhitespace(str.charAt(i))) {
             i++;
         }
-        return i + 8 <= n && str.startsWith("#version", i);
+        return i + 8 <= n && !str.startsWith("{", i);
     }
 
     public static class ShaderVariable

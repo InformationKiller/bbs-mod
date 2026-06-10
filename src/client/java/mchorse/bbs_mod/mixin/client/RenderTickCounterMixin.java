@@ -41,6 +41,14 @@ public class RenderTickCounterMixin
             if (videoRecorder.getCounter() == 0)
             {
                 this.tickDelta = 0;
+                this.heldFrames = 0;
+            }
+
+            this.heldFrames += 1;
+
+            if (this.heldFrames >= BBSSettings.videoSettings.heldFrames.get())
+            {
+                this.heldFrames = 0;
             }
 
             if (this.heldFrames == 0)
@@ -64,13 +72,6 @@ public class RenderTickCounterMixin
                 BBSRendering.canRender = false;
 
                 info.setReturnValue(0);
-            }
-
-            this.heldFrames += 1;
-
-            if (this.heldFrames >= BBSSettings.videoHeldFrames.get())
-            {
-                this.heldFrames = 0;
             }
         }
         else
