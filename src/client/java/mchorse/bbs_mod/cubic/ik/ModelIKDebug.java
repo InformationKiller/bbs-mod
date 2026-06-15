@@ -7,6 +7,7 @@ import mchorse.bbs_mod.cubic.render.CubicRenderer.PivotFrame;
 import mchorse.bbs_mod.cubic.render.ModelPivotFrames;
 import mchorse.bbs_mod.data.types.MapType;
 import mchorse.bbs_mod.forms.forms.Form;
+import mchorse.bbs_mod.forms.forms.ModelForm;
 import mchorse.bbs_mod.graphics.Draw;
 import mchorse.bbs_mod.ui.framework.elements.utils.StencilMap;
 import mchorse.bbs_mod.utils.MathUtils;
@@ -20,6 +21,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +47,8 @@ public final class ModelIKDebug
     private static final float[] WIRE = {0.90F, 0.92F, 0.95F};
     private static final float[] EFFECTOR = {0.30F, 0.64F, 1.00F};
     private static final float[] GOAL = {0.22F, 0.84F, 0.55F};
+    private static final float[] GOAL_OVERRIDE = {0.11F, 0.45F, 0.84F};
+    private static final float[] POLE = {0.84F, 0.22F, 0.55F};
 
     public static boolean enabled;
 
@@ -52,9 +56,9 @@ public final class ModelIKDebug
     {
     }
 
-    public static void render(MatrixStack stack, IModel model, MapType ikData, String selectedTip)
+    public static void render(MatrixStack stack, IModel model, MapType ikData, String selectedTip, ModelForm form, Matrix4f baseTransform)
     {
-        if (!enabled || model == null || ikData == null)
+        if (model == null || ikData == null)
         {
             return;
         }
@@ -82,7 +86,7 @@ public final class ModelIKDebug
 
         for (ModelIKCache.CompiledChain chain : compiled.chains())
         {
-            drawChain(stack, frames, chain, selectedTip);
+            drawChain(stack, frames, chain, selectedTip, form, baseTransform);
         }
 
         stack.pop();
@@ -98,6 +102,7 @@ public final class ModelIKDebug
         for (ModelIKCache.CompiledChain chain : compiled.chains())
         {
             wanted.add(chain.target());
+            if (chain.pole() && chain.poleTarget() != null && !chain.poleTarget().isEmpty()) wanted.add(chain.poleTarget());
             wanted.addAll(chain.chainRootToEffector());
         }
 
@@ -114,9 +119,9 @@ public final class ModelIKDebug
      * {@code stencilMap.objectIndex} as its colour and {@code addPicking} then
      * claims that same id. The matrix matches the visual overlay's.
      */
-    public static void renderStencil(MatrixStack stack, IModel model, MapType ikData, StencilMap stencilMap, Form form)
+    public static void renderStencil(MatrixStack stack, IModel model, MapType ikData, StencilMap stencilMap, ModelForm form, Matrix4f baseTransform)
     {
-        if (!enabled || model == null || ikData == null || stencilMap == null)
+        if (model == null || ikData == null || stencilMap == null)
         {
             return;
         }
@@ -152,12 +157,41 @@ public final class ModelIKDebug
                 continue;
             }
 
+            if (form.ikTargetOverrides.containsKey(chain.target()))
+            {
+                Vector4f override = new Vector4f(form.ikTargetOverrides.get(chain.target()));
+                
+                if (baseTransform != null)
+                {
+                    Matrix4f inv = new Matrix4f(baseTransform).invert();
+                    Vector3f pos = new Vector3f(override.x, override.y, override.z);
+                    inv.transformPosition(pos);
+                    override.x = pos.x;
+                    override.y = pos.y;
+                    override.z = pos.z;
+                }
+
+                goal.lerp(new Vector3f(override.x, override.y, override.z), override.w);
+            }
+
             int id = stencilMap.objectIndex;
             float s = goalRadius(frames, chain.chainRootToEffector());
 
             Draw.fillBox(builder, stack, goal.x - s, goal.y - s, goal.z - s, goal.x + s, goal.y + s, goal.z + s, (id & 0xFF) / 255F, (id >> 8 & 0xFF) / 255F, (id >> 16 & 0xFF) / 255F, 1F);
 
             stencilMap.addPicking(form, chain.target());
+
+            if (chain.chainRootToEffector().size() == 3 && chain.pole() && chain.poleTarget() != null)
+            {
+                Vector3f pole = position(frames, chain.poleTarget());
+
+                if (pole != null)
+                {
+                    id = stencilMap.objectIndex;
+                    Draw.fillBox(builder, stack, pole.x - s, pole.y - s, pole.z - s, pole.x + s, pole.y + s, pole.z + s, (id & 0xFF) / 255F, (id >> 8 & 0xFF) / 255F, (id >> 16 & 0xFF) / 255F, 1F);
+                    stencilMap.addPicking(form, chain.poleTarget());
+                }
+            }
         }
 
         BufferRenderer.drawWithGlobalProgram(builder.end());
@@ -177,7 +211,7 @@ public final class ModelIKDebug
         return span / Math.max(1, ids.size() - 1) * 0.2F;
     }
 
-    private static void drawChain(MatrixStack stack, Map<String, PivotFrame> frames, ModelIKCache.CompiledChain chain, String selectedTip)
+    private static void drawChain(MatrixStack stack, Map<String, PivotFrame> frames, ModelIKCache.CompiledChain chain, String selectedTip, ModelForm form, Matrix4f baseTransform)
     {
         List<String> ids = chain.chainRootToEffector();
         int n = ids.size();
@@ -202,10 +236,35 @@ public final class ModelIKDebug
         }
 
         Vector3f target = position(frames, chain.target());
+        float overrideFactor = 0.0F;
 
         if (target == null)
         {
             return;
+        }
+
+        if (form.ikTargetOverrides.containsKey(chain.target()))
+        {
+            Vector4f override = new Vector4f(form.ikTargetOverrides.get(chain.target()));
+            
+            if (baseTransform != null)
+            {
+                Matrix4f inv = new Matrix4f(baseTransform).invert();
+                Vector3f pos = new Vector3f(override.x, override.y, override.z);
+                inv.transformPosition(pos);
+                override.x = pos.x;
+                override.y = pos.y;
+                override.z = pos.z;
+            }
+
+            target.lerp(new Vector3f(override.x, override.y, override.z), override.w);
+            overrideFactor = override.w;
+        }
+
+        Vector3f poleTarget = null;
+        if (n == 3 && chain.pole() && chain.poleTarget() != null)
+        {
+            poleTarget = position(frames, chain.poleTarget());
         }
 
         Vector3f tip = pts.get(n - 1);
@@ -234,6 +293,11 @@ public final class ModelIKDebug
 
         addLine(lines, matrix, tip, target, GOAL, 0.4F * a);
 
+        if (poleTarget != null)
+        {
+            addLine(lines, matrix, pts.get(1), poleTarget, POLE, 0.4F * a);
+        }
+
         BufferRenderer.drawWithGlobalProgram(lines.end());
 
         /* Solid spheres: joints, the accented effector, and the goal. */
@@ -246,9 +310,26 @@ public final class ModelIKDebug
         }
 
         orb(dots, stack, tip, unit * 0.1F, EFFECTOR, a);
-        orb(dots, stack, target, unit * 0.12F, GOAL, a);
+        orb(dots, stack, target, unit * 0.12F, lerpColor(GOAL, GOAL_OVERRIDE, overrideFactor), a); // TODO
+
+        if (poleTarget != null)
+        {
+            orb(dots, stack, poleTarget, unit * 0.12F, POLE, a);
+        }
 
         BufferRenderer.drawWithGlobalProgram(dots.end());
+    }
+
+    private static float[] lerpColor(float[] a, float[] b, float x)
+    {
+        float[] out = new float[Math.min(a.length, b.length)];
+
+        for (int i = 0; i < out.length; i++)
+        {
+            out[i] = a[i] * (1F - x) + b[i] * x;
+        }
+
+        return out;
     }
 
     private static void orb(BufferBuilder builder, MatrixStack stack, Vector3f p, float radius, float[] col, float a)

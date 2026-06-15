@@ -4,6 +4,7 @@ import mchorse.bbs_mod.utils.joml.Matrices;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,12 +41,12 @@ final class IKSolver
     {
     }
 
-    public static List<Vector3f> solve(List<Vector3f> positions, Vector3f target, boolean applyPole, float poleAngleRad, float softness, int maxIterations, float tolerance)
-    {
-        return solve(positions, target, applyPole, poleAngleRad, softness, maxIterations, tolerance, null, null);
-    }
+    // public static List<Vector3f> solve(List<Vector3f> positions, Vector3f target, boolean applyPole, float poleAngleRad, float softness, int maxIterations, float tolerance)
+    // {
+    //     return solve(positions, target, applyPole, poleAngleRad, softness, maxIterations, tolerance, null, null);
+    // }
 
-    public static List<Vector3f> solve(List<Vector3f> positions, Vector3f target, boolean applyPole, float poleAngleRad, float softness, int maxIterations, float tolerance, Limit[] limits, Quaternionf rootParentRotation)
+    public static List<Vector3f> solve(List<Vector3f> positions, Vector3f target, boolean applyPole, float poleAngleRad, Vector3f poleTarget, float softness, int maxIterations, float tolerance, Limit[] limits, Quaternionf rootParentRotation, Quaternionf rootWorldRotation, Quaternionf rootRotation)
     {
         int n = positions.size();
 
@@ -68,21 +69,64 @@ final class IKSolver
 
         Vector3f root = new Vector3f(positions.get(0));
         Vector3f goal = clampReach(root, target, total, softness);
-        Vector3f hinge = applyPole ? captureHingeAxis(positions) : null;
+        Vector3f hinge = applyPole ? captureHingeAxis(positions, null) : null;
+        Vector3f poleGole = applyPole ? poleTarget : null;
 
-        boolean constrained = limits != null && rootParentRotation != null;
+        boolean constrained = limits != null;
 
         if (n == 3)
         {
-            /* Analytic is ideal for a two-bone limb — full reach, no flip, clean
-             * pole control. The pole defines the hinge; limits ride on top as
-             * range clamps (e.g. stop the elbow hyperextending). */
-            solveTwoBone(positions, root, goal);
-            orientBend(positions, hinge, poleAngleRad);
-
-            if (constrained)
+            if (poleGole != null)
             {
-                solveBendForLimits(positions, limits, rootParentRotation);
+                Quaternionf removeSelfRot = rootParentRotation.mul(rootWorldRotation.invert(new Quaternionf()), new Quaternionf());
+
+                for (Vector3f p : positions) {
+                    p.sub(root);
+                    removeSelfRot.transform(p);
+                    p.add(root);
+                }
+
+                hinge = captureHingeAxis(positions, rootParentRotation);
+
+                List<Vector3f> initialP = new ArrayList<>(positions.size());
+                for (Vector3f v : positions)
+                {
+                    initialP.add(new Vector3f(v));
+                }
+
+                solveTwoBone(positions, root, goal, poleGole);
+
+                Vector3f axis = new Vector3f(initialP.get(n - 1)).sub(root);
+                Quaternionf rot = computeUpperArmAlignQuaternion(positions, initialP, new Quaternionf().fromAxisAngleRad(axis.x, axis.y, axis.z, poleAngleRad).transform(new Vector3f(hinge)));
+                rot.invert(rootRotation);
+                // Vector3f rel = new Vector3f();
+
+                // for (int i = 1; i < positions.size(); i++) {
+                //     rel.set(positions.get(i)).sub(root);
+                //     rot.transform(rel);
+                //     positions.get(i).set(root).add(rel);
+                // }
+
+                // orientBend(positions, hinge, poleAngleRad);
+
+                // for (int i = 1; i < positions.size(); i++) {
+                //     rel.set(positions.get(i)).sub(root);
+                //     rootRotation.transform(rel);
+                //     positions.get(i).set(root).add(rel);
+                // }
+            }
+            else
+            {
+                /* Analytic is ideal for a two-bone limb — full reach, no flip, clean
+                * pole control. The pole defines the hinge; limits ride on top as
+                * range clamps (e.g. stop the elbow hyperextending). */
+                solveTwoBone(positions, root, goal, null);
+                orientBend(positions, hinge, poleAngleRad);
+
+                if (constrained)
+                {
+                    solveBendForLimits(positions, limits, rootParentRotation);
+                }
             }
         }
         else if (constrained)
@@ -100,6 +144,40 @@ final class IKSolver
         }
 
         return positions;
+    }
+
+    private static Quaternionf computeUpperArmAlignQuaternion(List<Vector3f> currentP, List<Vector3f> initialP, Vector3f hinge) {
+        int n = currentP.size();
+        if (n < 3 || initialP.size() < n) {
+            return new Quaternionf();
+        }
+
+        Vector3f root = currentP.get(0);
+        Vector3f elbow = currentP.get(1);
+        Vector3f tip = currentP.get(n - 1);
+
+        Vector3f root0 = initialP.get(0);
+        Vector3f elbow0 = initialP.get(1);
+
+        Vector3f upperArm = new Vector3f(elbow).sub(root);
+        if (!normalize(upperArm)) return new Quaternionf();
+
+        Vector3f forearm = new Vector3f(tip).sub(elbow);
+        Vector3f normal = new Vector3f(upperArm).cross(forearm);
+        if (!normalize(normal)) return new Quaternionf();
+
+        Vector3f upperArm0 = new Vector3f(elbow0).sub(root0);
+        if (!normalize(upperArm0)) return new Quaternionf();
+
+        Quaternionf qArm = new Quaternionf().rotateTo(upperArm, upperArm0);
+
+        Vector3f normalPrime = qArm.transform(new Vector3f(normal));
+        float dot = normalPrime.dot(hinge);
+        float crossDot = normalPrime.cross(hinge).dot(upperArm0);
+        float angle = (float) Math.atan2(crossDot, dot);
+        Quaternionf qPlane = new Quaternionf().fromAxisAngleRad(upperArm0, angle);
+
+        return qPlane.mul(qArm);
     }
 
     /**
@@ -128,7 +206,7 @@ final class IKSolver
 
             if (dist > da)
             {
-                float eff = total - soft * (float) Math.exp(-(dist - da) / soft);
+                float eff = Math.min(total - soft * (float) Math.exp(-(dist - da) / soft), total * REACH_LIMIT);
                 goal.set(root).fma(eff, dir);
             }
         }
@@ -140,7 +218,7 @@ final class IKSolver
         return goal;
     }
 
-    private static void solveTwoBone(List<Vector3f> p, Vector3f root, Vector3f goal)
+    private static void solveTwoBone(List<Vector3f> p, Vector3f root, Vector3f goal, Vector3f poleTarget)
     {
         float l1 = root.distance(p.get(1));
         float l2 = p.get(1).distance(p.get(2));
@@ -159,7 +237,7 @@ final class IKSolver
         float sinA = (float) Math.sqrt(Math.max(0F, 1F - cosA * cosA));
 
         /* Seed the bend on any valid plane; orientBend fixes the direction. */
-        Vector3f bend = perpendicular(root, p.get(1), goal);
+        Vector3f bend = perpendicular(root, poleTarget == null ? p.get(1) : poleTarget, goal);
 
         if (bend == null)
         {
@@ -596,9 +674,27 @@ final class IKSolver
      * (or x worldUp), which is a fixed direction independent of the target, so
      * locking the bend to it never flips. Null only for a degenerate chain.
      */
-    private static Vector3f captureHingeAxis(List<Vector3f> p)
+    private static Vector3f captureHingeAxis(List<Vector3f> p, Quaternionf rootWorldRotation)
     {
         int n = p.size();
+
+        if (rootWorldRotation != null && n > 1)
+        {
+            Quaternionf rotInv = new Quaternionf(rootWorldRotation).invert();
+            Vector3f a = p.get(0);
+            Vector3f limb = rotInv.transform(new Vector3f(p.get(n - 1)).sub(a));
+
+            Vector3f hinge = new Vector3f(limb).cross(0F, 0F, 1F);
+
+            if (normalize(hinge))
+            {
+                return rootWorldRotation.transform(hinge);
+            }
+
+            hinge = new Vector3f(limb).cross(0F, 1F, 0F);
+
+            return normalize(hinge) ? rootWorldRotation.transform(hinge) : null;
+        }
 
         if (n < 3)
         {

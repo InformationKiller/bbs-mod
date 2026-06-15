@@ -73,10 +73,10 @@ public class CubicRenderer
     {
     }
 
-    public static void collectPivotFrames(Model model, Set<String> wanted, Map<String, PivotFrame> out)
-    {
-        collectPivotFrames(model, wanted, out, null);
-    }
+    // public static void collectPivotFrames(Model model, Set<String> wanted, Map<String, PivotFrame> out)
+    // {
+    //     collectPivotFrames(model, wanted, , out, null);
+    // }
 
     public static void collectPivotFrames(Model model, Set<String> wanted, Map<String, PivotFrame> out, Matrix4f baseTransform)
     {
@@ -144,7 +144,7 @@ public class CubicRenderer
         stack.pop();
     }
 
-    public static void applyRotations(Model model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions)
+    public static void applyRotations(Model model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions, Quaternionf rootRotation)
     {
         if (model == null || rootParentRotation == null || ids == null || positions == null || ids.isEmpty() || positions.length < 2)
         {
@@ -217,16 +217,15 @@ public class CubicRenderer
 
             desiredDirLocal.normalize();
 
-            Quaternionf localRot = Matrices.fromToMirroredX(restDirLocal, desiredDirLocal);
-            localRot.mul(twistAround(bone.current.rotate, bone.current.rotate2, restDirLocal));
+            Quaternionf localRot = i == 0 && rootRotation != null ? rootRotation : Matrices.fromToMirroredX(restDirLocal, desiredDirLocal).mul(twistAround(bone.current.rotate, bone.current.rotate2, restDirLocal));
             Vector3f eulerDeg = Matrices.toEulerZYXDegrees(localRot);
 
-            float rx = bone.current.rotate.x;
-            float ry = bone.current.rotate.y;
-            float rz = bone.current.rotate.z;
-            eulerDeg.x = wrapDegreesNear(eulerDeg.x, rx);
-            eulerDeg.y = wrapDegreesNear(eulerDeg.y, ry);
-            eulerDeg.z = wrapDegreesNear(eulerDeg.z, rz);
+            // float rx = bone.current.rotate.x;
+            // float ry = bone.current.rotate.y;
+            // float rz = bone.current.rotate.z;
+            // eulerDeg.x = wrapDegreesNear(eulerDeg.x, rx);
+            // eulerDeg.y = wrapDegreesNear(eulerDeg.y, ry);
+            // eulerDeg.z = wrapDegreesNear(eulerDeg.z, rz);
 
             bone.current.rotate.set(eulerDeg);
             bone.current.rotate2.set(0F, 0F, 0F);

@@ -33,7 +33,9 @@ import mchorse.bbs_mod.forms.renderers.utils.MatrixCache;
 import mchorse.bbs_mod.forms.renderers.utils.MatrixCacheEntry;
 import mchorse.bbs_mod.resources.Link;
 import mchorse.bbs_mod.settings.values.core.ValuePose;
+import mchorse.bbs_mod.ui.film.UIFilmPanel;
 import mchorse.bbs_mod.ui.framework.UIContext;
+import mchorse.bbs_mod.ui.framework.UIScreen;
 import mchorse.bbs_mod.ui.framework.elements.utils.StencilMap;
 import mchorse.bbs_mod.utils.MathUtils;
 import mchorse.bbs_mod.utils.MatrixStackUtils;
@@ -56,6 +58,7 @@ import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
@@ -91,7 +94,7 @@ public class ModelFormRenderer extends FormRenderer<ModelForm> implements ITicka
     private IEntity entity = new StubEntity();
 
     @Override
-    protected void applyTransforms(MatrixStack stack, boolean origin, float transition)
+    public void applyTransforms(MatrixStack stack, boolean origin, float transition)
     {
         super.applyTransforms(stack, origin, transition);
 
@@ -104,7 +107,7 @@ public class ModelFormRenderer extends FormRenderer<ModelForm> implements ITicka
     }
 
     @Override
-    protected void applyTransforms(Matrix4f matrix, float transition)
+    public void applyTransforms(Matrix4f matrix, float transition)
     {
         super.applyTransforms(matrix, transition);
 
@@ -345,9 +348,11 @@ public class ModelFormRenderer extends FormRenderer<ModelForm> implements ITicka
         this.applyConstraintsOnce(model);
         model.render(newStack, program, finalColor, light, overlay, stencilMap, this.form.shapeKeys.get());
 
-        if (stencilMap == null && ModelIKDebug.enabled && this.form != null && this.form.ik.get() instanceof MapType ikMap)
+        if (stencilMap == null && (program.get() == BBSShaders.getModel() ||
+            BBSModClient.getDashboardIfCreated() != null && UIScreen.getCurrentMenu() == BBSModClient.getDashboard() && BBSModClient.getDashboard().getPanels().panel instanceof UIFilmPanel film && !film.isRunning()
+            ) && this.form != null && this.form.ik.get() instanceof MapType ikMap)
         {
-            ModelIKDebug.render(newStack, model.model, ikMap, "");
+            ModelIKDebug.render(newStack, model.model, ikMap, "", this.form, baseTransform);
         }
 
         gameRenderer.getLightmapTextureManager().disable();
@@ -390,21 +395,21 @@ public class ModelFormRenderer extends FormRenderer<ModelForm> implements ITicka
         }
 
         Matrix4f inv = new Matrix4f(baseTransform).invert();
-        Map<String, Vector3f> local = new HashMap<>(this.form.ikTargetOverrides.size() * 2);
+        Map<String, Vector4f> local = new HashMap<>(this.form.ikTargetOverrides.size() * 2);
 
-        for (Map.Entry<String, Vector3f> entry : this.form.ikTargetOverrides.entrySet())
+        for (Map.Entry<String, Vector4f> entry : this.form.ikTargetOverrides.entrySet())
         {
             String controller = entry.getKey();
-            Vector3f worldPos = entry.getValue();
+            Vector4f worldPos = entry.getValue();
 
             if (controller == null || controller.isEmpty() || worldPos == null)
             {
                 continue;
             }
 
-            Vector3f pos = new Vector3f(worldPos);
+            Vector3f pos = new Vector3f(worldPos.x, worldPos.y, worldPos.z);
             inv.transformPosition(pos);
-            local.put(controller, pos);
+            local.put(controller, new Vector4f(pos.x, pos.y, pos.z, worldPos.w));
         }
 
         if (local.isEmpty())
@@ -429,20 +434,20 @@ public class ModelFormRenderer extends FormRenderer<ModelForm> implements ITicka
         ModelPhysicsRuntime.apply(target, model, transition, baseTransform, this.poseFixByBone);
     }
 
-    private void collectPoseFixByBone()
+    public Map<String, Float> collectPoseFixByBone()
     {
         this.poseFixByBone.clear();
 
         if (this.form == null)
         {
-            return;
+            return this.poseFixByBone;
         }
 
         Pose pose = this.getPose();
 
         if (pose == null || pose.transforms.isEmpty())
         {
-            return;
+            return this.poseFixByBone;
         }
 
         for (Map.Entry<String, PoseTransform> entry : pose.transforms.entrySet())
@@ -462,6 +467,8 @@ public class ModelFormRenderer extends FormRenderer<ModelForm> implements ITicka
                 this.poseFixByBone.put(bone, fix);
             }
         }
+
+        return this.poseFixByBone;
     }
 
     private void applyConstraintsOnce(ModelInstance model)
@@ -680,9 +687,10 @@ public class ModelFormRenderer extends FormRenderer<ModelForm> implements ITicka
 
         model.fillStencilMap(context.stencilMap, this.form);
 
-        if (ModelIKDebug.enabled && this.form != null && this.form.ik.get() instanceof mchorse.bbs_mod.data.types.MapType ikMap)
+        if (this.form != null && this.form.ik.get() instanceof mchorse.bbs_mod.data.types.MapType ikMap)
         {
-            ModelIKDebug.renderStencil(context.stack, model.model, ikMap, context.stencilMap, this.form);
+            Matrix4f baseTransform = context.ui ? null : new Matrix4f((context.world != null ? context.world : context.stack).peek().getPositionMatrix());
+            ModelIKDebug.renderStencil(context.stack, model.model, ikMap, context.stencilMap, this.form, baseTransform);
         }
     }
 

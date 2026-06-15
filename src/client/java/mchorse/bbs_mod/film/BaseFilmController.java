@@ -56,6 +56,7 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.List;
 import java.util.Map;
@@ -748,7 +749,7 @@ public abstract class BaseFilmController
         this.applyTargetOverrides(replay, root, tick, transition);
     }
 
-    private void applyTargetOverrides(Replay replay, Form root, float tick, float transition)
+    public void applyTargetOverrides(Replay replay, Form root, float tick, float transition)
     {
         if (replay == null || root == null)
         {
@@ -799,17 +800,17 @@ public abstract class BaseFilmController
 
         if (form instanceof ModelForm modelForm)
         {
-            Vector3f position = resolveTargetPosition(channel, tick, transition);
+            Vector4f position = resolveTargetPosition(channel, tick, transition);
 
             if (position != null)
             {
-                Map<String, Vector3f> overrides = isIK ? modelForm.ikTargetOverrides : modelForm.physicsTargetOverrides;
-                overrides.computeIfAbsent(targetId, (k) -> new Vector3f()).set(position);
+                Map<String, Vector4f> overrides = isIK ? modelForm.ikTargetOverrides : modelForm.physicsTargetOverrides;
+                overrides.computeIfAbsent(targetId, (k) -> new Vector4f()).set(position);
             }
         }
     }
 
-    private Vector3f resolveTargetPosition(KeyframeChannel<?> channel, float tick, float transition)
+    private Vector4f resolveTargetPosition(KeyframeChannel<?> channel, float tick, float transition)
     {
         KeyframeSegment<?> segment = channel.find(tick);
 
@@ -825,17 +826,30 @@ public abstract class BaseFilmController
             return null;
         }
 
-        IEntity targetEntity = this.entities.get(anchor.replay);
-
-        if (targetEntity == null)
+        float factor = 0F;
+        if (anchor.isFadeIn())
         {
-            return null;
+            factor = anchor.x;
+            anchor.x = 1.0F;
         }
+        else if (anchor.isFadeOut())
+        {
+            factor = 1.0F - anchor.x;
+            anchor.x = 0.0F;
+        }
+        else
+        {
+            factor = anchor.replay != Anchor.NO_ATTACHMENT ? 1.0F : 0.0F;
+        }
+
+        if (factor <= 0.000001) return null;
 
         Pair<Matrix4f, Float> matrix = getTotalMatrix(this.entities, anchor, IDENTITY, 0D, 0D, 0D, transition, 0, true);
         Matrix4f resolved = matrix.a != null ? matrix.a : IDENTITY;
 
-        return resolved.getTranslation(TEMP_VECTOR);
+        resolved.getTranslation(TEMP_VECTOR);
+
+        return new Vector4f(TEMP_VECTOR.x, TEMP_VECTOR.y, TEMP_VECTOR.z, factor);
     }
 
     private void clearTargetOverrides(Form form)

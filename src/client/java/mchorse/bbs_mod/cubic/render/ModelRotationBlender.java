@@ -23,7 +23,7 @@ public final class ModelRotationBlender
     {
     }
 
-    public static void applyWeightedRotations(IModel model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions, float weight)
+    public static void applyWeightedRotations(IModel model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions, float weight, Quaternionf rootRotation)
     {
         float factor = clamp01(weight);
 
@@ -34,22 +34,22 @@ public final class ModelRotationBlender
 
         if (model instanceof Model cubic)
         {
-            applyWeightedRotationsCubic(cubic, rootParentRotation, ids, positions, factor);
+            applyWeightedRotationsCubic(cubic, rootParentRotation, ids, positions, factor, rootRotation);
             return;
         }
 
         if (model instanceof BOBJModel bobj)
         {
-            applyWeightedRotationsBobj(bobj, rootParentRotation, ids, positions, factor);
+            applyWeightedRotationsBobj(bobj, rootParentRotation, ids, positions, factor, rootRotation);
         }
     }
 
     public static void applyWeightedRotations(Model model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions, float weight)
     {
-        applyWeightedRotations((IModel) model, rootParentRotation, ids, positions, weight);
+        applyWeightedRotations((IModel) model, rootParentRotation, ids, positions, weight, new Quaternionf());
     }
 
-    private static void applyWeightedRotationsCubic(Model model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions, float factor)
+    private static void applyWeightedRotationsCubic(Model model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions, float factor, Quaternionf rootRotation)
     {
         if (model == null || rootParentRotation == null || ids == null || positions == null || ids.isEmpty() || positions.length < 2)
         {
@@ -58,7 +58,7 @@ public final class ModelRotationBlender
 
         if (factor >= 1F - EPS)
         {
-            CubicRenderer.applyRotations(model, rootParentRotation, ids, positions);
+            CubicRenderer.applyRotations(model, rootParentRotation, ids, positions, rootRotation);
             return;
         }
 
@@ -91,7 +91,7 @@ public final class ModelRotationBlender
             baseLocal[i] = toLocalRotation(bone.current.rotate, bone.current.rotate2);
         }
 
-        CubicRenderer.applyRotations(model, rootParentRotation, ids, positions);
+        CubicRenderer.applyRotations(model, rootParentRotation, ids, positions, rootRotation);
 
         for (int i = 0; i < rotCount; i++)
         {
@@ -109,7 +109,7 @@ public final class ModelRotationBlender
         }
     }
 
-    private static void applyWeightedRotationsBobj(BOBJModel model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions, float factor)
+    private static void applyWeightedRotationsBobj(BOBJModel model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions, float factor, Quaternionf rootRotation)
     {
         if (model == null || rootParentRotation == null || ids == null || positions == null || ids.isEmpty() || positions.length < 2)
         {
@@ -118,7 +118,7 @@ public final class ModelRotationBlender
 
         if (factor >= 1F - EPS)
         {
-            applyRotationsBobj(model, rootParentRotation, ids, positions);
+            applyRotationsBobj(model, rootParentRotation, ids, positions, rootRotation);
             return;
         }
 
@@ -152,7 +152,7 @@ public final class ModelRotationBlender
             baseLocal[i] = toLocalRotationRadians(bone.transform.rotate, bone.transform.rotate2);
         }
 
-        applyRotationsBobj(model, rootParentRotation, ids, positions);
+        applyRotationsBobj(model, rootParentRotation, ids, positions, rootRotation);
 
         for (int i = 0; i < rotCount; i++)
         {
@@ -170,7 +170,7 @@ public final class ModelRotationBlender
         }
     }
 
-    private static void applyRotationsBobj(BOBJModel model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions)
+    private static void applyRotationsBobj(BOBJModel model, Quaternionf rootParentRotation, List<String> ids, Vector3f[] positions, Quaternionf rootRotation)
     {
         if (model == null || rootParentRotation == null || ids == null || positions == null || ids.isEmpty() || positions.length < 2)
         {
@@ -214,13 +214,12 @@ public final class ModelRotationBlender
 
             desiredDirLocal.normalize();
 
-            Quaternionf localRot = Matrices.fromToMirroredX(restDirLocal, desiredDirLocal);
-            localRot.mul(Matrices.twistAbout(toLocalRotationRadians(bone.transform.rotate, bone.transform.rotate2), restDirLocal));
+            Quaternionf localRot = i == 0 && rootRotation != null ? rootRotation : Matrices.fromToMirroredX(restDirLocal, desiredDirLocal).mul(Matrices.twistAbout(toLocalRotationRadians(bone.transform.rotate, bone.transform.rotate2), restDirLocal));
             Vector3f eulerRad = new Quaternionf(localRot).normalize().getEulerAnglesZYX(new Vector3f());
 
-            eulerRad.x = wrapRadiansNear(eulerRad.x, bone.transform.rotate.x);
-            eulerRad.y = wrapRadiansNear(eulerRad.y, bone.transform.rotate.y);
-            eulerRad.z = wrapRadiansNear(eulerRad.z, bone.transform.rotate.z);
+            // eulerRad.x = wrapRadiansNear(eulerRad.x, bone.transform.rotate.x);
+            // eulerRad.y = wrapRadiansNear(eulerRad.y, bone.transform.rotate.y);
+            // eulerRad.z = wrapRadiansNear(eulerRad.z, bone.transform.rotate.z);
 
             bone.transform.rotate.set(eulerRad);
             bone.transform.rotate2.set(0F, 0F, 0F);
@@ -267,7 +266,7 @@ public final class ModelRotationBlender
         return new Vector3f(0F, -1F, 0F);
     }
 
-    private static Quaternionf toLocalRotation(Vector3f rotate, Vector3f rotate2)
+    public static Quaternionf toLocalRotation(Vector3f rotate, Vector3f rotate2)
     {
         Quaternionf q = Matrices.toQuaternionZYXDegrees(rotate.x, rotate.y, rotate.z);
 

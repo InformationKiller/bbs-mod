@@ -3,6 +3,7 @@ package mchorse.bbs_mod.ui.film.replays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +21,14 @@ import mchorse.bbs_mod.cubic.ModelInstance;
 import mchorse.bbs_mod.cubic.ik.ModelIKRuntime;
 import mchorse.bbs_mod.data.DataStorageUtils;
 import mchorse.bbs_mod.data.types.MapType;
+import mchorse.bbs_mod.film.BaseFilmController;
 import mchorse.bbs_mod.film.Film;
+import mchorse.bbs_mod.film.replays.PerLimbService;
+import mchorse.bbs_mod.film.replays.PerLimbService.PoseBonePath;
 import mchorse.bbs_mod.film.replays.Replay;
 import mchorse.bbs_mod.film.replays.ReplayKeyframes;
 import mchorse.bbs_mod.forms.FormUtils;
+import mchorse.bbs_mod.forms.FormUtilsClient;
 import mchorse.bbs_mod.forms.entities.IEntity;
 import mchorse.bbs_mod.forms.forms.Form;
 import mchorse.bbs_mod.forms.forms.ModelForm;
@@ -32,6 +37,7 @@ import mchorse.bbs_mod.graphics.window.Window;
 import mchorse.bbs_mod.l10n.L10n;
 import mchorse.bbs_mod.l10n.keys.IKey;
 import mchorse.bbs_mod.resources.Link;
+import mchorse.bbs_mod.settings.values.IValueListener;
 import mchorse.bbs_mod.settings.values.base.BaseValue;
 import mchorse.bbs_mod.settings.values.base.BaseValueBasic;
 import mchorse.bbs_mod.ui.Keys;
@@ -72,14 +78,22 @@ import mchorse.bbs_mod.utils.StringUtils;
 import mchorse.bbs_mod.utils.clips.Clip;
 import mchorse.bbs_mod.utils.clips.Clips;
 import mchorse.bbs_mod.utils.colors.Colors;
+import mchorse.bbs_mod.utils.keyframes.Keyframe;
 import mchorse.bbs_mod.utils.keyframes.KeyframeChannel;
 import mchorse.bbs_mod.utils.keyframes.factories.KeyframeFactories;
+import mchorse.bbs_mod.utils.pose.PoseTransform;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.World;
+
+import org.joml.Matrix4f;
 import org.joml.Vector3d;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
+import io.netty.util.collection.IntObjectMap;
 
 public class UIReplaysEditor extends UIElement {
 
@@ -617,10 +631,98 @@ public class UIReplaysEditor extends UIElement {
                     }
 
                     List<String> controllers = ModelIKRuntime.getControllers(ModelFormRenderer.getModel(modelForm));
-                    if (!controllers.isEmpty()) {
+                    if (!controllers.isEmpty() && this.category == ReplayCategory.MODEL) {
                         menu.action(Icons.CLOSE, UIKeys.FILM_REPLAY_CONTEXT_CLEAR_IK, () -> {
                             UIReplaysEditorUtils.clearIKTracks(this.replay, modelForm);
                             this.updateChannelsList();
+                        });
+                    }
+
+                    boolean selectedIK = false;
+                    for (UIKeyframeSheet s : sheets)
+                    {
+                        selectedIK |= PerLimbService.isPoseBoneChannel(sheet.id) && controllers.contains(PerLimbService.parsePoseBonePath(sheet.id).bone()) && s.selection.hasAny();
+                    }
+
+                    if (selectedIK)
+                    {
+                        menu.action(Icons.LIMB, IKey.constant("IK -> FK"), () -> {
+                            IEntity entity = this.filmPanel.getController().getCurrentEntity();
+
+                            if (entity != null && entity.getForm() instanceof ModelForm form)
+                            {
+                                ModelFormRenderer renderer = (ModelFormRenderer) FormUtilsClient.getRenderer(form);
+
+                                Map<Float, List<String>> ikFrames = new HashMap<>();
+                                Map<String, Map<Float, PoseTransform>> fkFrames = new HashMap<>();
+
+                                for (UIKeyframeSheet s : sheets)
+                                {
+                                    PoseBonePath bonePath = PerLimbService.parsePoseBonePath(sheet.id);
+                                    if (PerLimbService.isPoseBoneChannel(sheet.id) && controllers.contains(bonePath.bone()) && s.selection.hasAny())
+                                    {
+                                        for (Keyframe frame : s.selection.getSelected())
+                                        {
+                                            if (!ikFrames.containsKey(frame.getTick()))
+                                            {
+                                                ikFrames.put(frame.getTick(), new ArrayList<>());
+                                            }
+
+                                            ikFrames.get(frame.getTick()).add(bonePath.bone());
+                                        }
+                                    }
+                                }
+
+                                List<Replay> replays = this.filmPanel.getData().replays.getList();
+                                IntObjectMap<IEntity> entities = this.filmPanel.getController().getEntities();
+                                Matrix4f worldToEntity = UIReplaysEditorUtils.getReplayWorldMatrix(this.replay, entity, entities, 0F).invert();
+
+                                for (float tick : ikFrames.keySet())
+                                {
+                                    for (int i : entities.keySet())
+                                    {
+                                        Form m = entities.get(i).getForm();
+                                        replays.get(i).properties.applyProperties(m, tick);
+                                    }
+
+                                    this.filmPanel.getController().editorController.applyTargetOverrides(this.replay, form, tick, 0);
+                                    for (Vector4f pos : form.ikTargetOverrides.values())
+                                    {
+                                        Vector3f pos0 = new Vector3f(pos.x, pos.y, pos.z);
+                                        worldToEntity.transformPosition(pos0);
+                                        pos.set(pos0.x, pos0.y, pos0.z);
+                                    }
+
+                                    renderer.getModel().model.resetPose();
+                                    renderer.getModel().model.applyPose(form.pose.get());
+                                    Map<String, PoseTransform> baked = ModelIKRuntime.bakeIK(renderer.getModel(), form.ikTargetOverrides, renderer.collectPoseFixByBone(), ikFrames.get(tick));
+
+                                    for (String bone : baked.keySet())
+                                    {
+                                        if (!fkFrames.containsKey(bone))
+                                        {
+                                            fkFrames.put(bone, new HashMap<>());
+                                        }
+
+                                        fkFrames.get(bone).put(tick, baked.get(bone));
+                                    }
+                                }
+
+                                this.keyframeEditor.view.getGraph().clearSelection();
+
+                                for (String property : fkFrames.keySet())
+                                {
+                                    UIKeyframeSheet s = this.keyframeEditor.view.getGraph().getSheet(PerLimbService.toPoseBoneKey(FormUtils.getPath(form), property));
+
+                                    if (s != null)
+                                    {
+                                        for (Map.Entry<Float, PoseTransform> entry : fkFrames.get(property).entrySet())
+                                        {
+                                            s.selection.add(s.channel.insert(entry.getKey(), entry.getValue()));
+                                        }
+                                    }
+                                }
+                            }
                         });
                     }
                 }

@@ -137,7 +137,32 @@ public class Matrices
     {
         Vector3f radZYX = new Vector3f();
 
-        new Quaternionf(q).normalize().getEulerAnglesZYX(radZYX);
+        q = new Quaternionf(q).normalize();
+
+        float x = q.x, y = q.y, z = q.z, w = q.w;
+        final float LOCK_THRESHOLD = 0.999999f;
+        float sinPitch = 2.0f * (w * y - x * z);
+
+        if (Math.abs(sinPitch) >= LOCK_THRESHOLD)
+        {
+            radZYX.x = 0.0f;
+            radZYX.y = sinPitch > 0 ? (float) Math.PI / 2 : -(float) Math.PI / 2;
+
+            if (sinPitch > 0)
+            {
+                radZYX.z = org.joml.Math.atan2(w * z - x * y, x * z + w * y);
+            }
+            else
+            {
+                radZYX.z = org.joml.Math.atan2(w * z - x * y, 0.5f - x * x - z * z);
+            }
+        }
+        else
+        {
+            radZYX.x = org.joml.Math.atan2(y * z + w * x, 0.5f - x * x - y * y); // JOML BUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUG
+            radZYX.y = org.joml.Math.safeAsin(-2.0f * (x * z - w * y));
+            radZYX.z = org.joml.Math.atan2(x * y + w * z, 0.5f - y * y - z * z);
+        }
 
         return radZYX.mul((float) (180.0 / Math.PI));
     }

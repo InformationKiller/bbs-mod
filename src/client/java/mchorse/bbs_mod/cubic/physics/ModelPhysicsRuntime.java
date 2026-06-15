@@ -16,6 +16,7 @@ import net.minecraft.world.World;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -233,11 +234,11 @@ public final class ModelPhysicsRuntime
         if (instance != null && instance.form instanceof mchorse.bbs_mod.forms.forms.ModelForm modelForm)
         {
             String rootBone = ids.get(0);
-            Vector3f worldPos = modelForm.physicsTargetOverrides.get(rootBone);
+            Vector4f worldPos = modelForm.physicsTargetOverrides.get(rootBone);
 
             if (worldPos != null)
             {
-                target = new Vector3f(worldPos);
+                target = new Vector3f(worldPos.x, worldPos.y, worldPos.z); // TODO: Fix it?
             }
         }
 
@@ -265,7 +266,7 @@ public final class ModelPhysicsRuntime
 
         step(world, age, transition, model, ids, chain, constraints, anchor, anchorRotation, chainFrames.get(0).parentRotation(), target, chainFrames, state);
         Vector3f[] positions = renderInterpolate(state, state.renderAlpha, anchor, anchorRotation, target);
-        ModelRotationBlender.applyWeightedRotations(model, chainFrames.get(0).parentRotation(), ids, positions, weight);
+        ModelRotationBlender.applyWeightedRotations(model, chainFrames.get(0).parentRotation(), ids, positions, weight, new Quaternionf());
     }
 
     private static float getChainPoseFix(List<String> ids, String targetBone, Map<String, Float> poseFixByBone)

@@ -14,6 +14,7 @@ import mchorse.bbs_mod.settings.values.numeric.ValueBoolean;
 import mchorse.bbs_mod.utils.colors.Color;
 import mchorse.bbs_mod.utils.pose.Pose;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,8 +36,8 @@ public class ModelForm extends Form
     public final ValueData constraints = new ValueData("constraints");
 
     public final List<ValuePose> additionalOverlays = new ArrayList<>();
-    public final transient Map<String, Vector3f> ikTargetOverrides = new HashMap<>();
-    public final transient Map<String, Vector3f> physicsTargetOverrides = new HashMap<>();
+    public final transient Map<String, Vector4f> ikTargetOverrides = new HashMap<>();
+    public final transient Map<String, Vector4f> physicsTargetOverrides = new HashMap<>();
 
     public ModelForm()
     {

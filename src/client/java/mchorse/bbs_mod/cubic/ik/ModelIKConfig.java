@@ -16,13 +16,14 @@ public record ModelIKConfig(List<Chain> chains)
      * side is oriented automatically and {@code poleAngle} degrees rotate it;
      * when off, the bend is left to the raw position solve.
      */
-    public record Chain(String tip, String target, int chainLength, boolean pole, float poleAngle, float softness, float weight, boolean enabled)
+    public record Chain(String tip, String target, int chainLength, boolean pole, float poleAngle, String poleTarget, float softness, float weight, boolean enabled)
     {
         public Chain
         {
             tip = tip == null ? "" : tip;
             target = target == null ? "" : target;
             chainLength = Math.max(0, chainLength);
+            poleTarget = poleTarget == null ? "" : poleTarget;
             softness = clamp01(softness);
             weight = clamp01(weight);
         }

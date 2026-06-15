@@ -409,9 +409,9 @@ public class BBSSettings {
 
 		builder.category("transformation", Icons.SCALE);
 		gizmos = builder.getBoolean("gizmos", true);
-		axesScale = builder.getFloat("axes_scale", 3F, 0F, 10F);
+		axesScale = builder.getFloat("axes_scale", 1F, 0F, 10F);
 		axesThickness = builder.getFloat("axes_thickness", 0.5F, 0.25F, 3F);
-		axesKeepScreenSize = builder.getBoolean("axes_keep_screen_size", true);
+		axesKeepScreenSize = builder.getBoolean("axes_keep_screen_size", false);
 		rotate3dSphere = builder.getBoolean("rotate_3d_sphere", true);
 		rotate3dSphereColor = builder.getInt("rotate_3d_sphere_color", Colors.setA(Colors.WHITE, 0F)).colorAlpha();
 		rotateHideRings = builder.getBoolean("rotate_hide_rings", false);

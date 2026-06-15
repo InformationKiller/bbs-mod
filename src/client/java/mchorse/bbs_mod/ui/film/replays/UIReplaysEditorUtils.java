@@ -17,6 +17,7 @@ import mchorse.bbs_mod.film.replays.FormProperties;
 import mchorse.bbs_mod.film.replays.PerLimbService;
 import mchorse.bbs_mod.film.replays.Replay;
 import mchorse.bbs_mod.forms.FormUtils;
+import mchorse.bbs_mod.forms.FormUtilsClient;
 import mchorse.bbs_mod.forms.entities.IEntity;
 import mchorse.bbs_mod.forms.forms.Form;
 import mchorse.bbs_mod.forms.forms.ModelForm;
@@ -36,9 +37,11 @@ import mchorse.bbs_mod.ui.framework.elements.input.keyframes.factories.UIPoseTra
 import mchorse.bbs_mod.ui.framework.elements.input.keyframes.factories.UITransformKeyframeFactory;
 import mchorse.bbs_mod.ui.framework.elements.input.keyframes.graphs.IUIKeyframeGraph;
 import mchorse.bbs_mod.ui.utils.icons.Icons;
+import mchorse.bbs_mod.utils.MathUtils;
 import mchorse.bbs_mod.utils.Pair;
 import mchorse.bbs_mod.settings.values.core.ValueTransform;
 import mchorse.bbs_mod.utils.colors.Colors;
+import mchorse.bbs_mod.utils.joml.Matrices;
 import mchorse.bbs_mod.utils.keyframes.Keyframe;
 import mchorse.bbs_mod.utils.keyframes.KeyframeChannel;
 import mchorse.bbs_mod.utils.keyframes.KeyframeSegment;
@@ -47,8 +50,14 @@ import mchorse.bbs_mod.settings.values.base.BaseValue;
 import mchorse.bbs_mod.settings.values.base.BaseValueBasic;
 import mchorse.bbs_mod.utils.pose.Pose;
 import mchorse.bbs_mod.utils.pose.PoseTransform;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.Camera;
+import net.minecraft.util.math.RotationAxis;
+
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+
+import io.netty.util.collection.IntObjectMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -214,6 +223,11 @@ public class UIReplaysEditorUtils
         Map<String, Integer> parentToColor = new HashMap<>();
         int[] hueIndex = {0};
 
+        List<String> controllers = ModelIKRuntime.getControllers(model);
+        List<String> poleControllers = ModelIKRuntime.getPoleControllers(model);
+
+        Pose pose = modelForm.pose.get();
+
         for (String bone : bones)
         {
             if (model.disabledBones.contains(bone))
@@ -230,9 +244,9 @@ public class UIReplaysEditorUtils
             String boneKey = PerLimbService.toPoseBoneKey(path, bone);
             String title = path.isEmpty() ? bone : path + "/" + bone;
             KeyframeChannel channel = properties.registerChannel(boneKey, KeyframeFactories.POSE_TRANSFORM);
-            ValueTransform transform = new ValueTransform(boneKey, new PoseTransform());
+            ValueTransform transform = new ValueTransform(boneKey, pose.transforms.containsKey(bone) ? pose.transforms.get(bone) : new PoseTransform());
 
-            out.add(new UIKeyframeSheet(boneKey, IKey.constant(title), color, false, channel, transform, true));
+            out.add(new UIKeyframeSheet(boneKey, IKey.constant(title), color, false, channel, transform, true).icon(controllers.contains(bone) ? Icons.LIMB : (poleControllers.contains(bone) ? Icons.ARC : null)));
 
             if (depthBySheetId != null)
             {
@@ -1001,5 +1015,34 @@ public class UIReplaysEditorUtils
                 menu.autoKeys();
             });
         }
+    }
+
+    public static Matrix4f getReplayWorldMatrix(Replay replay, IEntity entity, IntObjectMap<IEntity> entities, float transition)
+    {
+        Matrix4f targetWorld = null;
+
+        if (replay.relative.get())
+        {
+            double cx = replay.keyframes.x.interpolate(0F) + replay.relativeOffset.get().x;
+            double cy = replay.keyframes.y.interpolate(0F) + replay.relativeOffset.get().y;
+            double cz = replay.keyframes.z.interpolate(0F) + replay.relativeOffset.get().z;
+            targetWorld = BaseFilmController.getMatrixForRenderWithRotation(entity, cx, cy, cz, transition);
+        }
+        else
+        {
+            Matrix4f defaultWorldMatrix = BaseFilmController.getMatrixForRenderWithRotation(entity, 0D, 0D, 0D, transition);
+            Pair<Matrix4f, Float> pairWorld = BaseFilmController.getTotalMatrix(entities, entity.getForm().anchor.get(), defaultWorldMatrix, 0D, 0D, 0D, transition, 0);
+
+            targetWorld = pairWorld.a != null ? pairWorld.a : defaultWorldMatrix;
+        }
+
+        FormUtilsClient.getRenderer(entity.getForm()).applyTransforms(targetWorld, transition);
+
+        if (entity.getForm() instanceof ModelForm)
+        {
+            targetWorld.mul(Matrices.TEMP_4F.rotation(RotationAxis.POSITIVE_Y.rotation(MathUtils.PI)));
+        }
+
+        return targetWorld;
     }
 }

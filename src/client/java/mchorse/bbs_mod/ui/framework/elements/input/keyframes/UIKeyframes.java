@@ -1049,7 +1049,7 @@ public class UIKeyframes extends UIElement
             {
                 this.duplicateOrSelectColumn(context);
             }
-            else if (context.mouseButton == 0)
+            else if (context.mouseButton == 0 || context.mouseButton == 1)
             {
                 this.pickOrStartSelectingKeyframes(context);
             }

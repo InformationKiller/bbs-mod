@@ -1228,7 +1228,7 @@ public class UIClips extends UIElement
             int tick = (int) Math.floor(this.scale.from(mouseX));
             int layerIndex = this.fromLayerY(mouseY);
             Clip original = this.delegate.getClip();
-            Clip clip = this.clips.getClipAt(tick, layerIndex);
+            Clip clip = this.area.isInside(mouseX, mouseY) ? this.clips.getClipAt(tick, layerIndex) : null;
 
             if (clip != null)
             {
@@ -1361,6 +1361,21 @@ public class UIClips extends UIElement
 
             return true;
         }
+        else if (!this.hasEmbeddedView())
+        {
+            int tick = (int) Math.floor(this.scale.from(mouseX));
+            int layerIndex = this.fromLayerY(mouseY);
+            Clip clip = this.area.isInside(mouseX, mouseY) ? this.clips.getClipAt(tick, layerIndex) : null;
+
+            if (clip != null)
+            {
+                if (!this.hasSelected(this.clips.getIndex(clip)))
+                {
+                    this.delegate.pickClip(clip);
+                    this.setSelected(clip);
+                }
+            }
+        }
 
         return false;
     }
@@ -1464,17 +1479,18 @@ public class UIClips extends UIElement
 
         this.vertical.mouseReleased(context);
 
-        if (!Window.isShiftPressed() && !this.canGrab)
-        {
-            int tick = (int) Math.floor(this.scale.from(context.mouseX));
-            int layerIndex = this.fromLayerY(context.mouseY);
-            Clip clip = this.clips.getClipAt(tick, layerIndex);
+        // Why???
+        // if (!Window.isShiftPressed() && !this.canGrab)
+        // {
+        //     int tick = (int) Math.floor(this.scale.from(context.mouseX));
+        //     int layerIndex = this.fromLayerY(context.mouseY);
+        //     Clip clip = this.clips.getClipAt(tick, layerIndex);
 
-            if (clip != null)
-            {
-                this.setSelected(clip);
-            }
-        }
+        //     if (clip != null)
+        //     {
+        //         this.setSelected(clip);
+        //     }
+        // }
 
         if (this.selecting)
         {
@@ -1830,10 +1846,9 @@ public class UIClips extends UIElement
         batcher.unclip(context);
         batcher.clip(this.area, context);
 
-        this.renderTickMarkers(context, area.y, area.h);
-
-        batcher.unclip(context);
-        batcher.clip(this.vertical.area.x, rulerBottom, this.vertical.area.ex(), this.vertical.area.ey(), context);
+        // batcher.unclip(context);
+        // batcher.clip(this.vertical.area.x, rulerBottom, this.vertical.area.ex(), this.vertical.area.ey(), context);
+        // batcher.clip(this.area, context);
 
         List<Clip> clips = this.clips.get();
 
@@ -1865,6 +1880,8 @@ public class UIClips extends UIElement
                 context.batcher.icon(Icons.CLIP_HANLDE_RIGHT, color, clipArea.ex(), clipArea.y + 10, 1F, 0.5F);
             }
         }
+
+        this.renderTickMarkers(context, area.y, area.h);
 
         this.renderAddPreview(context, h);
         this.renderLoopingRegion(context, area.y);

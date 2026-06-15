@@ -36,6 +36,7 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
     public UITrackpad chainLength;
     public UIToggle pole;
     public UITrackpad poleAngle;
+    public UIButton poleTarget;
     public UITrackpad softness;
     public UITrackpad weight;
 
@@ -50,6 +51,7 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
         public int chainLength = ModelIKConfig.DEFAULT_CHAIN_LENGTH;
         public boolean pole = true;
         public float poleAngle = ModelIKConfig.DEFAULT_POLE_ANGLE;
+        public String poleTarget = "";
         public float softness = ModelIKConfig.DEFAULT_SOFTNESS;
         public float weight = ModelIKConfig.DEFAULT_WEIGHT;
         public boolean enabled = true;
@@ -111,6 +113,7 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
 
             IKData data = this.getOrCreateData(this.selectedBone);
             data.chainLength = Math.max(0, (int) v.floatValue());
+            this.updateLabels();
             this.commitChanges();
         });
         this.chainLength.limit(0).integer();
@@ -143,6 +146,19 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
         this.poleAngle.increment(5D).values(1D, 0.5D, 5D);
         this.poleAngle.tooltip(UIKeys.FORMS_EDITORS_MODEL_IK_POLE_ANGLE);
 
+        this.poleTarget = new UIButton(IKey.EMPTY, (b) ->
+        {
+            if (this.selectedBone.isEmpty()) return;
+
+            IKData data = this.getOrCreateData(this.selectedBone);
+            this.openBoneMenu(data.poleTarget, (bone) ->
+            {
+                data.poleTarget = bone;
+                this.updateLabels();
+                this.commitChanges();
+            });
+        });
+
         this.softness = new UITrackpad((v) ->
         {
             if (this.syncingUI || this.selectedBone.isEmpty())
@@ -172,7 +188,7 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
         this.weight.tooltip(UIKeys.FORMS_EDITORS_MODEL_IK_WEIGHT);
 
         this.options.add(
-            this.debug,
+            // this.debug,
             UI.label(UIKeys.FORMS_EDITORS_MODEL_IK_BONES),
             this.bones,
             UI.label(UIKeys.FORMS_EDITORS_MODEL_IK_SETTINGS).background().marginTop(UIConstants.SECTION_GAP),
@@ -183,6 +199,8 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
             this.pole,
             UI.label(UIKeys.FORMS_EDITORS_MODEL_IK_POLE_ANGLE).marginTop(UIConstants.SECTION_GAP),
             this.poleAngle,
+            UI.label(UIKeys.FORMS_EDITORS_MODEL_IK_POLE_TARGET).marginTop(UIConstants.SECTION_GAP),
+            this.poleTarget,
             UI.label(UIKeys.FORMS_EDITORS_MODEL_IK_SOFTNESS).marginTop(UIConstants.SECTION_GAP),
             this.softness,
             UI.label(UIKeys.FORMS_EDITORS_MODEL_IK_WEIGHT).marginTop(UIConstants.SECTION_GAP),
@@ -230,6 +248,7 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
         this.chainLength.setEnabled(enabled);
         this.pole.setEnabled(enabled);
         this.poleAngle.setEnabled(enabled);
+        this.poleTarget.setEnabled(enabled);
         this.softness.setEnabled(enabled);
         this.weight.setEnabled(enabled);
     }
@@ -240,6 +259,20 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
         if (bone == null || bone.isEmpty() || !this.bones.getList().contains(bone))
         {
             return false;
+        }
+
+        for (String key : this.ikData.keySet())
+        {
+            IKData data = this.ikData.get(key);
+
+            if (data.enabled)
+            {
+                if (bone.equals(data.target) || data.pole && data.chainLength == 3 && bone.equals(data.poleTarget))
+                {
+                    bone = key;
+                    break;
+                }
+            }
         }
 
         this.selectedBone = bone;
@@ -283,6 +316,7 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
         String targetLabel = data == null ? "" : data.target;
         boolean active = data != null && data.enabled;
         boolean poleOn = data != null && data.pole;
+        String poleTargetLabel = data == null ? "" : data.poleTarget;
         boolean canEdit = !this.selectedBone.isEmpty() && this.bones.isEnabled() && active;
 
         this.syncingUI = true;
@@ -293,6 +327,7 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
             this.chainLength.setValue(data == null ? ModelIKConfig.DEFAULT_CHAIN_LENGTH : data.chainLength);
             this.pole.setValue(poleOn);
             this.poleAngle.setValue(data == null ? ModelIKConfig.DEFAULT_POLE_ANGLE : data.poleAngle);
+            this.poleTarget.label = UIKeys.FORMS_EDITORS_MODEL_IK_TARGET.format(this.formatBone(poleTargetLabel));
             this.softness.setValue(data == null ? ModelIKConfig.DEFAULT_SOFTNESS : data.softness);
             this.weight.setValue(data == null ? ModelIKConfig.DEFAULT_WEIGHT : data.weight);
             this.enabled.setEnabled(this.bones.isEnabled() && !this.selectedBone.isEmpty());
@@ -307,6 +342,7 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
         this.chainLength.setEnabled(canEdit);
         this.pole.setEnabled(canEdit);
         this.poleAngle.setEnabled(canEdit && poleOn);
+        this.poleTarget.setEnabled(canEdit && poleOn && data.chainLength == 3);
         this.softness.setEnabled(canEdit);
         this.weight.setEnabled(canEdit);
     }
@@ -361,6 +397,7 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
             data.chainLength = chain.chainLength();
             data.pole = chain.pole();
             data.poleAngle = chain.poleAngle();
+            data.poleTarget = chain.poleTarget();
             data.softness = chain.softness();
             data.weight = chain.weight();
             data.enabled = chain.enabled();
@@ -394,7 +431,7 @@ public class UIModelIKFormPanel extends UIFormPanel<ModelForm>
                 continue;
             }
 
-            out.add(new ModelIKConfig.Chain(tip, data.target, data.chainLength, data.pole, data.poleAngle, data.softness, data.weight, data.enabled));
+            out.add(new ModelIKConfig.Chain(tip, data.target, data.chainLength, data.pole, data.poleAngle, data.poleTarget, data.softness, data.weight, data.enabled));
         }
 
         if (out.isEmpty())

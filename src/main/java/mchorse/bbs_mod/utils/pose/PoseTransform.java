@@ -14,6 +14,7 @@ public class PoseTransform extends Transform
     public float fix;
     public final Color color = new Color().set(Colors.WHITE);
     public float lighting;
+    public boolean initial;
 
     @Override
     public void identity()
@@ -112,9 +113,9 @@ public class PoseTransform extends Transform
 
         if (transform instanceof PoseTransform pose)
         {
-            this.fix += pose.fix;
-            this.color.mul(pose.color);
-            this.lighting += pose.lighting;
+            this.fix = pose.fix;
+            this.color.set(pose.color.getARGBColor());
+            this.lighting = pose.lighting;
         }
     }
 

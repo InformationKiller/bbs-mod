@@ -9,6 +9,7 @@ import mchorse.bbs_mod.cubic.render.ModelPivotFrames;
 import mchorse.bbs_mod.cubic.render.ModelRotationBlender;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,12 +28,12 @@ final class ModelIKApplier
     {
     }
 
-    public static void apply(IModel model, List<ModelIKCache.CompiledChain> chains, Map<String, Vector3f> controllerTargets, Map<String, Float> poseFixByBone)
-    {
-        apply(model, chains, controllerTargets, poseFixByBone, null);
-    }
+    // public static void apply(IModel model, List<ModelIKCache.CompiledChain> chains, Map<String, Vector3f> controllerTargets, Map<String, Float> poseFixByBone)
+    // {
+    //     apply(model, chains, controllerTargets, poseFixByBone, null);
+    // }
 
-    public static void apply(IModel model, List<ModelIKCache.CompiledChain> chains, Map<String, Vector3f> controllerTargets, Map<String, Float> poseFixByBone, Map<String, BoneConstraint> boneLimits)
+    public static void apply(IModel model, List<ModelIKCache.CompiledChain> chains, Map<String, Vector4f> controllerTargets, Map<String, Float> poseFixByBone, Map<String, BoneConstraint> boneLimits)
     {
         if (model == null || chains == null || chains.isEmpty())
         {
@@ -49,6 +50,7 @@ final class ModelIKApplier
         {
             Set<String> wanted = new HashSet<>();
             wanted.add(chain.target());
+            if (chain.pole() && chain.poleTarget() != null && !chain.poleTarget().isEmpty()) wanted.add(chain.poleTarget());
             wanted.addAll(chain.chainRootToEffector());
 
             Map<String, PivotFrame> frames = new HashMap<>(wanted.size() * 2);
@@ -81,7 +83,7 @@ final class ModelIKApplier
         return depth;
     }
 
-    private static void applyChain(IModel model, ModelIKCache.CompiledChain chain, Map<String, PivotFrame> frames, Map<String, Vector3f> controllerTargets, Map<String, Float> poseFixByBone, Map<String, BoneConstraint> boneLimits)
+    private static void applyChain(IModel model, ModelIKCache.CompiledChain chain, Map<String, PivotFrame> frames, Map<String, Vector4f> controllerTargets, Map<String, Float> poseFixByBone, Map<String, BoneConstraint> boneLimits)
     {
         float poseFix = getChainPoseFix(chain, poseFixByBone);
         float weight = chain.weight() * (1F - poseFix);
@@ -92,6 +94,7 @@ final class ModelIKApplier
         }
 
         PivotFrame targetFrame = frames.get(chain.target());
+        PivotFrame poleTargetFrame = frames.get(chain.poleTarget());
 
         if (targetFrame == null)
         {
@@ -101,6 +104,7 @@ final class ModelIKApplier
         List<String> chainIds = chain.chainRootToEffector();
         List<Vector3f> currentPositions = new ArrayList<>(chainIds.size());
         Quaternionf rootParentRotation = null;
+        Quaternionf rootWorldRotation = null;
 
         for (String id : chainIds)
         {
@@ -116,6 +120,7 @@ final class ModelIKApplier
             if (rootParentRotation == null)
             {
                 rootParentRotation = new Quaternionf(frame.parentRotation());
+                rootWorldRotation = new Quaternionf(frame.worldRotation());
             }
         }
 
@@ -124,16 +129,21 @@ final class ModelIKApplier
             return;
         }
 
-        Vector3f override = controllerTargets == null ? null : controllerTargets.get(chain.target());
-        Vector3f target = override != null ? new Vector3f(override) : new Vector3f(targetFrame.position());
+        Vector4f override = controllerTargets == null ? null : controllerTargets.get(chain.target());
+        Vector3f target = override != null ? new Vector3f(targetFrame.position()).lerp(new Vector3f(override.x, override.y, override.z), override.w) : new Vector3f(targetFrame.position());
+
+        Vector3f poleTarget = poleTargetFrame == null ? null : new Vector3f(poleTargetFrame.position());
 
         float poleAngleRad = (float) Math.toRadians(chain.poleAngle());
         IKSolver.Limit[] limits = buildLimits(model, chainIds, boneLimits);
 
-        List<Vector3f> solved = IKSolver.solve(currentPositions, target, chain.pole(), poleAngleRad, chain.softness(), MAX_ITERATIONS, TOLERANCE, limits, limits == null ? null : rootParentRotation);
+        Quaternionf rootRotation = new Quaternionf();
+        List<Vector3f> solved = IKSolver.solve(currentPositions, target, chain.pole(), poleAngleRad, poleTarget, chain.softness(), MAX_ITERATIONS, TOLERANCE, limits, rootParentRotation, rootWorldRotation, rootRotation);
+
+        boolean twoBones = chainIds.size() == 3 && chain.pole() && poleTarget != null;
 
         Vector3f[] solvedArray = solved.toArray(new Vector3f[solved.size()]);
-        ModelRotationBlender.applyWeightedRotations(model, rootParentRotation, chainIds, solvedArray, weight);
+        ModelRotationBlender.applyWeightedRotations(model, rootParentRotation, chainIds, solvedArray, weight, twoBones ? rootRotation : null);
     }
 
     /**
@@ -218,15 +228,15 @@ final class ModelIKApplier
 
         float maxFix = getFix(poseFixByBone, chain.target());
 
-        for (String bone : chain.chainRootToEffector())
-        {
-            maxFix = Math.max(maxFix, getFix(poseFixByBone, bone));
+        // for (String bone : chain.chainRootToEffector())
+        // {
+        //     maxFix = Math.max(maxFix, getFix(poseFixByBone, bone));
 
-            if (maxFix >= 1F)
-            {
-                return 1F;
-            }
-        }
+        //     if (maxFix >= 1F)
+        //     {
+        //         return 1F;
+        //     }
+        // }
 
         return maxFix;
     }

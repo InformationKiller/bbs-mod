@@ -37,6 +37,11 @@ public class Pose implements IMapSerializable
         patterns.add(new Pair<>(Pattern.compile("^(.+[_.])l([_.].+)$"), "$1r$2"));
     }
 
+    public Pose()
+    {
+        
+    }
+
     public void flip(Map<String, String> flippedParts)
     {
         List<Pair<String, String>> list = new ArrayList<>();

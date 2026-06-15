@@ -140,7 +140,7 @@ public abstract class FormRenderer <T extends Form>
         this.form.unapplyStates();
     }
 
-    protected void applyTransforms(MatrixStack stack, boolean origin, float transition)
+    public void applyTransforms(MatrixStack stack, boolean origin, float transition)
     {
         Transform transform = this.createTransform();
 
@@ -154,7 +154,7 @@ public abstract class FormRenderer <T extends Form>
         }
     }
 
-    protected void applyTransforms(Matrix4f matrix, float transition)
+    public void applyTransforms(Matrix4f matrix, float transition)
     {
         matrix.mul(this.createTransform().createMatrix());
     }

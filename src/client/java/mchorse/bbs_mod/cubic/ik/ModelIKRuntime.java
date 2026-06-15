@@ -6,9 +6,15 @@ import mchorse.bbs_mod.cubic.constraints.ModelConstraintsConfig.BoneConstraint;
 import mchorse.bbs_mod.cubic.constraints.ModelConstraintsRuntime;
 import mchorse.bbs_mod.data.types.MapType;
 import mchorse.bbs_mod.forms.forms.ModelForm;
+import mchorse.bbs_mod.utils.pose.Pose;
+import mchorse.bbs_mod.utils.pose.PoseTransform;
+
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +41,7 @@ public final class ModelIKRuntime
         apply(instance, null, poseFixByBone);
     }
 
-    public static void apply(ModelInstance instance, Map<String, Vector3f> controllerTargets, Map<String, Float> poseFixByBone)
+    public static void apply(ModelInstance instance, Map<String, Vector4f> controllerTargets, Map<String, Float> poseFixByBone)
     {
         if (instance == null || instance.model == null)
         {
@@ -98,5 +104,76 @@ public final class ModelIKRuntime
         }
 
         return unique.isEmpty() ? java.util.Collections.emptyList() : new ArrayList<>(unique);
+    }
+
+    public static List<String> getPoleControllers(ModelInstance instance)
+    {
+        if (instance == null || instance.model == null)
+        {
+            return java.util.Collections.emptyList();
+        }
+
+        IModel model = instance.model;
+
+        ModelIKCache.Compiled compiled = null;
+        if (instance.form instanceof ModelForm form && form.ik.get() instanceof MapType map)
+        {
+            compiled = ModelIKCache.getFromData(model, map);
+        }
+
+        if (compiled == null || compiled.chains() == null || compiled.chains().isEmpty())
+        {
+            return java.util.Collections.emptyList();
+        }
+
+        Set<String> unique = new LinkedHashSet<>();
+
+        for (ModelIKCache.CompiledChain chain : compiled.chains())
+        {
+            if (chain != null && chain.target() != null && !chain.target().isEmpty() && chain.pole() && chain.chainRootToEffector().size() == 3)
+            {
+                unique.add(chain.poleTarget());
+            }
+        }
+
+        return unique.isEmpty() ? java.util.Collections.emptyList() : new ArrayList<>(unique);
+    }
+
+    public static Map<String, PoseTransform> bakeIK(ModelInstance instance, Map<String, Vector4f> controllerTargets, Map<String, Float> poseFixByBone, List<String> from)
+    {
+        ModelIKCache.Compiled compiled = null;
+        if (instance.form instanceof ModelForm form && form.ik.get() instanceof MapType map)
+        {
+            compiled = ModelIKCache.getFromData(instance.model, map);
+        }
+
+        if (compiled == null)
+        {
+            return null;
+        }
+
+        List<ModelIKCache.CompiledChain> chains = compiled.chains();
+        Set<String> bones = new HashSet<>();
+
+        for (ModelIKCache.CompiledChain chain : chains)
+        {
+            if (from.contains(chain.target()))
+            {
+                bones.addAll(chain.chainRootToEffector());
+            }
+        }
+
+        apply(instance, controllerTargets, poseFixByBone);
+
+        Pose pose = instance.model.createPose();
+
+        Map<String, PoseTransform> ret = new HashMap<>();
+
+        for (String bone : bones)
+        {
+            ret.put(bone, pose.get(bone));
+        }
+
+        return ret;
     }
 }
