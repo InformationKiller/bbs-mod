@@ -630,7 +630,7 @@ public class UIReplaysEditor extends UIElement {
                         });
                     }
 
-                    List<String> controllers = ModelIKRuntime.getControllers(ModelFormRenderer.getModel(modelForm));
+                    List<String> controllers = ModelIKRuntime.getAllControllers(modelForm);
                     if (!controllers.isEmpty() && this.category == ReplayCategory.MODEL) {
                         menu.action(Icons.CLOSE, UIKeys.FILM_REPLAY_CONTEXT_CLEAR_IK, () -> {
                             UIReplaysEditorUtils.clearIKTracks(this.replay, modelForm);
@@ -641,7 +641,7 @@ public class UIReplaysEditor extends UIElement {
                     boolean selectedIK = false;
                     for (UIKeyframeSheet s : sheets)
                     {
-                        selectedIK |= PerLimbService.isPoseBoneChannel(sheet.id) && controllers.contains(PerLimbService.parsePoseBonePath(sheet.id).bone()) && s.selection.hasAny();
+                        selectedIK |= PerLimbService.isPoseBoneChannel(sheet.id) && controllers.contains(sheet.id) && s.selection.hasAny();
                     }
 
                     if (selectedIK)
@@ -649,62 +649,82 @@ public class UIReplaysEditor extends UIElement {
                         menu.action(Icons.LIMB, IKey.constant("IK -> FK"), () -> {
                             IEntity entity = this.filmPanel.getController().getCurrentEntity();
 
-                            if (entity != null && entity.getForm() instanceof ModelForm form)
+                            if (entity != null && entity.getForm() != null)
                             {
-                                ModelFormRenderer renderer = (ModelFormRenderer) FormUtilsClient.getRenderer(form);
+                                Form form = entity.getForm();
 
-                                Map<Float, List<String>> ikFrames = new HashMap<>();
+                                Map<ModelForm, Map<Float, List<String>>> ikFrames = new HashMap<>();
                                 Map<String, Map<Float, PoseTransform>> fkFrames = new HashMap<>();
 
                                 for (UIKeyframeSheet s : sheets)
                                 {
-                                    PoseBonePath bonePath = PerLimbService.parsePoseBonePath(sheet.id);
-                                    if (PerLimbService.isPoseBoneChannel(sheet.id) && controllers.contains(bonePath.bone()) && s.selection.hasAny())
+                                    PoseBonePath bonePath = PerLimbService.parsePoseBonePath(s.id);
+                                    if (PerLimbService.isPoseBoneChannel(s.id) && controllers.contains(s.id) && s.selection.hasAny())
                                     {
-                                        for (Keyframe frame : s.selection.getSelected())
+                                        if (FormUtils.getForm(form, bonePath.formPath()) instanceof ModelForm m)
                                         {
-                                            if (!ikFrames.containsKey(frame.getTick()))
+                                            if (!ikFrames.containsKey(m))
                                             {
-                                                ikFrames.put(frame.getTick(), new ArrayList<>());
+                                                ikFrames.put(m, new HashMap<>());
                                             }
 
-                                            ikFrames.get(frame.getTick()).add(bonePath.bone());
+                                            for (Keyframe frame : s.selection.getSelected())
+                                            {
+                                                Map<Float, List<String>> ikByForm = ikFrames.get(m);
+
+                                                if (!ikByForm.containsKey(frame.getTick()))
+                                                {
+                                                    ikByForm.put(frame.getTick(), new ArrayList<>());
+                                                }
+
+                                                ikByForm.get(frame.getTick()).add(bonePath.bone());
+                                            }
                                         }
                                     }
                                 }
 
                                 List<Replay> replays = this.filmPanel.getData().replays.getList();
                                 IntObjectMap<IEntity> entities = this.filmPanel.getController().getEntities();
-                                Matrix4f worldToEntity = UIReplaysEditorUtils.getReplayWorldMatrix(this.replay, entity, entities, 0F).invert();
 
-                                for (float tick : ikFrames.keySet())
+                                for (ModelForm m : ikFrames.keySet())
                                 {
-                                    for (int i : entities.keySet())
+                                    Map<Float, List<String>> ikByForm = ikFrames.get(m);
+                                    ModelFormRenderer renderer = (ModelFormRenderer) FormUtilsClient.getRenderer(m);
+                                    Matrix4f worldToEntity = UIReplaysEditorUtils.getReplayWorldMatrix(this.replay, m, this.filmPanel.getController().panel.getData().replays.getList().indexOf(this.replay), entities, 0F).invert();
+                                    
+                                    for (float tick : ikByForm.keySet())
                                     {
-                                        Form m = entities.get(i).getForm();
-                                        replays.get(i).properties.applyProperties(m, tick);
-                                    }
-
-                                    this.filmPanel.getController().editorController.applyTargetOverrides(this.replay, form, tick, 0);
-                                    for (Vector4f pos : form.ikTargetOverrides.values())
-                                    {
-                                        Vector3f pos0 = new Vector3f(pos.x, pos.y, pos.z);
-                                        worldToEntity.transformPosition(pos0);
-                                        pos.set(pos0.x, pos0.y, pos0.z);
-                                    }
-
-                                    renderer.getModel().model.resetPose();
-                                    renderer.getModel().model.applyPose(form.pose.get());
-                                    Map<String, PoseTransform> baked = ModelIKRuntime.bakeIK(renderer.getModel(), form.ikTargetOverrides, renderer.collectPoseFixByBone(), ikFrames.get(tick));
-
-                                    for (String bone : baked.keySet())
-                                    {
-                                        if (!fkFrames.containsKey(bone))
+                                        for (int i : entities.keySet())
                                         {
-                                            fkFrames.put(bone, new HashMap<>());
+                                            Form f = entities.get(i).getForm();
+                                            replays.get(i).keyframes.apply((int) tick, entities.get(i), true);
+                                            replays.get(i).properties.applyProperties(f, tick);
                                         }
 
-                                        fkFrames.get(bone).put(tick, baked.get(bone));
+                                        this.filmPanel.getController().editorController.applyTargetOverrides(this.replay, entity.getForm(), tick, 0);
+                                        for (Vector4f pos : m.ikTargetOverrides.values())
+                                        {
+                                            Vector3f pos0 = new Vector3f(pos.x, pos.y, pos.z);
+                                            worldToEntity.transformPosition(pos0);
+                                            pos.set(pos0.x, pos0.y, pos0.z);
+                                        }
+
+                                        renderer.getModel().model.resetPose();
+                                        renderer.getModel().model.applyPose(m.pose.get());
+                                        renderer.getModel().form = m;
+                                        Map<String, PoseTransform> baked = ModelIKRuntime.bakeIK(renderer.getModel(), m.ikTargetOverrides, renderer.collectPoseFixByBone(), ikByForm.get(tick));
+
+                                        for (String bone : baked.keySet())
+                                        {
+                                            String sheetID = PerLimbService.toPoseBoneKey(FormUtils.getPath(m), bone);
+
+                                            if (!fkFrames.containsKey(sheetID))
+                                            {
+                                                fkFrames.put(sheetID, new HashMap<>());
+                                            }
+
+                                            fkFrames.get(sheetID).put(tick, baked.get(bone));
+                                        }
                                     }
                                 }
 
@@ -712,7 +732,7 @@ public class UIReplaysEditor extends UIElement {
 
                                 for (String property : fkFrames.keySet())
                                 {
-                                    UIKeyframeSheet s = this.keyframeEditor.view.getGraph().getSheet(PerLimbService.toPoseBoneKey(FormUtils.getPath(form), property));
+                                    UIKeyframeSheet s = this.keyframeEditor.view.getGraph().getSheet(property);
 
                                     if (s != null)
                                     {

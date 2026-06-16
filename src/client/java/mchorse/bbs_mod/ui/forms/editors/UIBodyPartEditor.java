@@ -41,10 +41,10 @@ public class UIBodyPartEditor extends UIScrollView
 
                 Form partForm = current.part.getForm();
 
-                if (partForm instanceof ModelForm m)
-                {
-                    m.boneTracks.set(false);
-                }
+                // if (partForm instanceof ModelForm m)
+                // {
+                //     m.boneTracks.set(false);
+                // }
 
                 if (partForm != null && partForm.getFormId().contains("particle"))
                 {

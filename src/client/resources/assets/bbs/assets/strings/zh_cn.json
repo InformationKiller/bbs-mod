@@ -1425,7 +1425,7 @@
     "bbs.ui.film.render_queue.load_timeout": "队列导出等待影片加载超时。",
     "bbs.ui.film.render_queue.progress": "正在导出影片 %s / %s：%s",
     "bbs.ui.film.render_queue.started": "队列导出已开始：%s 个影片。",
-    "bbs.ui.film.replay.context.clear_ik": "清除 IK 轨道",
+    "bbs.ui.film.replay.context.clear_ik": "清除全部 IK 绑定点",
     "bbs.ui.film.replay.orbit.teleport_to_recording": "传送到记录",
     "bbs.ui.forms.editors.additive_color": "叠加颜色",
     "bbs.ui.forms.editors.model.constraints.apply_to_children": "应用到子骨骼",

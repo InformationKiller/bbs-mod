@@ -5,7 +5,12 @@ import mchorse.bbs_mod.cubic.ModelInstance;
 import mchorse.bbs_mod.cubic.constraints.ModelConstraintsConfig.BoneConstraint;
 import mchorse.bbs_mod.cubic.constraints.ModelConstraintsRuntime;
 import mchorse.bbs_mod.data.types.MapType;
+import mchorse.bbs_mod.film.replays.PerLimbService;
+import mchorse.bbs_mod.forms.FormUtils;
+import mchorse.bbs_mod.forms.forms.BodyPart;
 import mchorse.bbs_mod.forms.forms.ModelForm;
+import mchorse.bbs_mod.forms.renderers.ModelFormRenderer;
+import mchorse.bbs_mod.settings.values.base.BaseValueBasic;
 import mchorse.bbs_mod.utils.pose.Pose;
 import mchorse.bbs_mod.utils.pose.PoseTransform;
 
@@ -73,8 +78,15 @@ public final class ModelIKRuntime
         ModelIKApplier.apply(model, chains, controllerTargets, poseFixByBone, boneLimits);
     }
 
-    public static List<String> getControllers(ModelInstance instance)
+    public static List<String> getControllers(ModelForm form)
     {
+        if (form == null)
+        {
+            return java.util.Collections.emptyList();
+        }
+
+        ModelInstance instance = ModelFormRenderer.getModel(form);
+
         if (instance == null || instance.model == null)
         {
             return java.util.Collections.emptyList();
@@ -83,7 +95,7 @@ public final class ModelIKRuntime
         IModel model = instance.model;
 
         ModelIKCache.Compiled compiled = null;
-        if (instance.form instanceof ModelForm form && form.ik.get() instanceof MapType map)
+        if (form.ik.get() instanceof MapType map)
         {
             compiled = ModelIKCache.getFromData(model, map);
         }
@@ -106,8 +118,36 @@ public final class ModelIKRuntime
         return unique.isEmpty() ? java.util.Collections.emptyList() : new ArrayList<>(unique);
     }
 
-    public static List<String> getPoleControllers(ModelInstance instance)
+    public static List<String> getAllControllers(ModelForm form)
     {
+        List<String> ret = new ArrayList<>();
+        List<String> result = getControllers(form);
+
+        for (String bone : result)
+        {
+            ret.add(PerLimbService.toPoseBoneKey(FormUtils.getPath(form), bone));
+        }
+
+        for (BodyPart part : form.parts.getAllTyped())
+        {
+            if (part.getForm() instanceof ModelForm bodyForm)
+            {
+                ret.addAll(getAllControllers(bodyForm));
+            }
+        }
+
+        return ret;
+    }
+
+    public static List<String> getPoleControllers(ModelForm form)
+    {
+        if (form == null)
+        {
+            return java.util.Collections.emptyList();
+        }
+
+        ModelInstance instance = ModelFormRenderer.getModel(form);
+
         if (instance == null || instance.model == null)
         {
             return java.util.Collections.emptyList();
@@ -116,7 +156,7 @@ public final class ModelIKRuntime
         IModel model = instance.model;
 
         ModelIKCache.Compiled compiled = null;
-        if (instance.form instanceof ModelForm form && form.ik.get() instanceof MapType map)
+        if (form.ik.get() instanceof MapType map)
         {
             compiled = ModelIKCache.getFromData(model, map);
         }

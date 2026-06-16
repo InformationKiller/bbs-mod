@@ -19,8 +19,10 @@ import mchorse.bbs_mod.film.replays.Replay;
 import mchorse.bbs_mod.forms.FormUtils;
 import mchorse.bbs_mod.forms.FormUtilsClient;
 import mchorse.bbs_mod.forms.entities.IEntity;
+import mchorse.bbs_mod.forms.forms.BodyPart;
 import mchorse.bbs_mod.forms.forms.Form;
 import mchorse.bbs_mod.forms.forms.ModelForm;
+import mchorse.bbs_mod.forms.forms.utils.Anchor;
 import mchorse.bbs_mod.forms.renderers.ModelFormRenderer;
 import mchorse.bbs_mod.graphics.window.Window;
 import mchorse.bbs_mod.l10n.keys.IKey;
@@ -206,10 +208,10 @@ public class UIReplaysEditorUtils
 
     public static void addBoneTrackSheets(ModelForm modelForm, FormProperties properties, List<UIKeyframeSheet> out, Map<String, Integer> depthBySheetId)
     {
-        if (!modelForm.boneTracks.get())
-        {
-            return;
-        }
+        // if (!modelForm.boneTracks.get())
+        // {
+        //     return;
+        // }
 
         ModelInstance model = ModelFormRenderer.getModel(modelForm);
 
@@ -223,8 +225,8 @@ public class UIReplaysEditorUtils
         Map<String, Integer> parentToColor = new HashMap<>();
         int[] hueIndex = {0};
 
-        List<String> controllers = ModelIKRuntime.getControllers(model);
-        List<String> poleControllers = ModelIKRuntime.getPoleControllers(model);
+        List<String> controllers = ModelIKRuntime.getControllers(modelForm);
+        List<String> poleControllers = ModelIKRuntime.getPoleControllers(modelForm);
 
         Pose pose = modelForm.pose.get();
 
@@ -270,7 +272,7 @@ public class UIReplaysEditorUtils
         }
 
         model.form = modelForm;
-        List<String> controllers = ModelIKRuntime.getControllers(model);
+        List<String> controllers = ModelIKRuntime.getControllers(modelForm);
         String path = FormUtils.getPath(modelForm);
 
         for (String controller : controllers)
@@ -891,7 +893,7 @@ public class UIReplaysEditorUtils
             return;
         }
 
-        List<String> controllers = ModelIKRuntime.getControllers(model);
+        List<String> controllers = ModelIKRuntime.getControllers(modelForm);
         String path = FormUtils.getPath(modelForm);
 
         BaseValue.edit(replay.properties, (props) ->
@@ -907,6 +909,14 @@ public class UIReplaysEditorUtils
                 }
             }
         });
+
+        for (BodyPart bodyPart : modelForm.parts.getAllTyped())
+        {
+            if (bodyPart.getForm() instanceof ModelForm bodyModel)
+            {
+                clearIKTracks(replay, bodyModel);
+            }
+        }
     }
 
     /* Offer bone hierarchy options */
@@ -1017,9 +1027,10 @@ public class UIReplaysEditorUtils
         }
     }
 
-    public static Matrix4f getReplayWorldMatrix(Replay replay, IEntity entity, IntObjectMap<IEntity> entities, float transition)
+    public static Matrix4f getReplayWorldMatrix(Replay replay, Form form, int index, IntObjectMap<IEntity> entities, float transition)
     {
         Matrix4f targetWorld = null;
+        IEntity entity = entities.get(index);
 
         if (replay.relative.get())
         {
@@ -1030,13 +1041,16 @@ public class UIReplaysEditorUtils
         }
         else
         {
-            Matrix4f defaultWorldMatrix = BaseFilmController.getMatrixForRenderWithRotation(entity, 0D, 0D, 0D, transition);
-            Pair<Matrix4f, Float> pairWorld = BaseFilmController.getTotalMatrix(entities, entity.getForm().anchor.get(), defaultWorldMatrix, 0D, 0D, 0D, transition, 0);
-
-            targetWorld = pairWorld.a != null ? pairWorld.a : defaultWorldMatrix;
+            targetWorld = BaseFilmController.getMatrixForRenderWithRotation(entity, 0D, 0D, 0D, transition);
         }
 
-        FormUtilsClient.getRenderer(entity.getForm()).applyTransforms(targetWorld, transition);
+        Matrix4f defaultWorldMatrix = BaseFilmController.getMatrixForRenderWithRotation(entity, 0D, 0D, 0D, transition);
+
+        Anchor anchor = new Anchor(index, FormUtils.getPath(form), false, false);
+        Pair<Matrix4f, Float> pairWorld = BaseFilmController.getTotalMatrix(entities, anchor, defaultWorldMatrix, 0D, 0D, 0D, transition, 0);
+        Matrix4f targetMatrix = pairWorld.a != null ? pairWorld.a : defaultWorldMatrix;
+
+        targetWorld.mul(defaultWorldMatrix.invert().mul(targetMatrix));
 
         if (entity.getForm() instanceof ModelForm)
         {
