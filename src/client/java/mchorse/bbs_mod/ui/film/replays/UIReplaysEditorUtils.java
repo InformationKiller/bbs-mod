@@ -38,6 +38,7 @@ import mchorse.bbs_mod.ui.framework.elements.input.keyframes.factories.UIPoseKey
 import mchorse.bbs_mod.ui.framework.elements.input.keyframes.factories.UIPoseTransformKeyframeFactory;
 import mchorse.bbs_mod.ui.framework.elements.input.keyframes.factories.UITransformKeyframeFactory;
 import mchorse.bbs_mod.ui.framework.elements.input.keyframes.graphs.IUIKeyframeGraph;
+import mchorse.bbs_mod.ui.framework.elements.input.keyframes.graphs.UIKeyframeDopeSheet;
 import mchorse.bbs_mod.ui.utils.icons.Icons;
 import mchorse.bbs_mod.utils.MathUtils;
 import mchorse.bbs_mod.utils.Pair;
@@ -65,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -540,11 +542,13 @@ public class UIReplaysEditorUtils
 
     private static UIKeyframeSheet resolveBoneSheet(UIKeyframeEditor keyframeEditor, String boneKey, String formPath)
     {
-        IUIKeyframeGraph graph = keyframeEditor.view.getGraph();
+        UIKeyframeDopeSheet graph = keyframeEditor.view.getDopeSheet();
         UIKeyframeSheet sheet = graph.getSheet(boneKey);
+        boolean requestOpenTab = false;
 
         if (sheet == null)
         {
+            requestOpenTab = true;
             /* Fallback: match by id ignoring case (stencil may return "head", sheet id may be "pose.bones.Head") */
             for (UIKeyframeSheet s : graph.getSheets())
             {
@@ -570,6 +574,10 @@ public class UIReplaysEditorUtils
                 {
                     return poseSheet;
                 }
+            }
+            else if (requestOpenTab)
+            {
+                openLimbTab(keyframeEditor, boneKey);
             }
 
             return sheet;
@@ -618,12 +626,25 @@ public class UIReplaysEditorUtils
     {
         UIKeyframeSheet sheet = keyframeEditor.view.getGraph().getSheet(key);
 
+        if (sheet == null)
+        {
+            openLimbTab(keyframeEditor, key);
+            sheet = keyframeEditor.view.getGraph().getSheet(key);
+        }
+
         if (sheet != null)
         {
             return pickProperty(keyframeEditor, cursor, bone, sheet, insert);
         }
 
         return false;
+    }
+
+    private static void openLimbTab(UIKeyframeEditor keyframeEditor, String key)
+    {
+        String formPath = PerLimbService.parsePoseBonePath(key).formPath();
+        UIKeyframeSheet sheet = keyframeEditor.view.getGraph().getSheet(formPath.isEmpty() ? "pose" : formPath + FormUtils.PATH_SEPARATOR + "pose");
+        keyframeEditor.view.getDopeSheet().openPoseTab(sheet);
     }
 
     private static boolean pickProperty(UIKeyframeEditor keyframeEditor, ICursor filmPanel, String bone, UIKeyframeSheet sheet, boolean insert)
@@ -777,6 +798,39 @@ public class UIReplaysEditorUtils
         }
     }
 
+    public static void animationToPerLimbKeyframes(
+        UIKeyframeEditor keyframeEditor,
+        ModelForm modelForm, IEntity entity,
+        int tick, String animationKey, boolean onlyKeyframes, int length, int step
+    ) {
+        ModelInstance model = ModelFormRenderer.getModel(modelForm);
+        Animation animation = model.animations.get(animationKey);
+
+        if (animation != null)
+        {
+            keyframeEditor.view.getDopeSheet().clearSelection();
+
+            if (onlyKeyframes)
+            {
+                Map<Float, Set<String>> map = getTicksWithLimbs(animation);
+
+                for (float i : map.keySet())
+                {
+                    fillAnimationLimbs(keyframeEditor.view.getDopeSheet(), i, modelForm, model, entity, animation, tick, map.get(i));
+                }
+            }
+            else
+            {
+                for (int i = 0; i < length; i += step)
+                {
+                    fillAnimationLimbs(keyframeEditor.view.getDopeSheet(), i, modelForm, model, entity, animation, tick, null);
+                }
+            }
+
+            keyframeEditor.view.getDopeSheet().pickSelected();
+        }
+    }
+
     public static void animationImport(UIKeyframeEditor keyframeEditor, ModelForm modelForm, int tick, String animationKey)
     {
         //
@@ -804,6 +858,30 @@ public class UIReplaysEditorUtils
         return ticks;
     }
 
+    private static Map<Float, Set<String>> getTicksWithLimbs(Animation animation)
+    {
+        Map<Float, Set<String>> map = new LinkedHashMap<>();
+
+        for (String bone : animation.parts.keySet())
+        {
+            AnimationPart value = animation.parts.get(bone);
+            for (KeyframeChannel<MolangExpression> channel : value.channels)
+            {
+                for (Keyframe<MolangExpression> keyframe : channel.getKeyframes())
+                {
+                    if (!map.containsKey(keyframe.getTick()))
+                    {
+                        map.put(keyframe.getTick(), new HashSet<>());
+                    }
+
+                    map.get(keyframe.getTick()).add(bone);
+                }
+            }
+        }
+
+        return map;
+    }
+
     private static void fillAnimationPose(UIKeyframeSheet sheet, float i, ModelInstance model, IEntity entity, Animation animation, int current)
     {
         model.model.resetPose();
@@ -812,6 +890,32 @@ public class UIReplaysEditorUtils
         int insert = sheet.channel.insert(current + i, model.model.createPose());
 
         sheet.selection.add(insert);
+    }
+
+    private static void fillAnimationLimbs(UIKeyframeDopeSheet dope, float i, ModelForm form, ModelInstance model, IEntity entity, Animation animation, int current, Set<String> filted)
+    {
+        model.model.resetPose();
+        model.model.applyRaw(entity, animation, i, 0F, false);
+
+        Pose pose = model.model.createPose();
+
+        for (String bone : pose.transforms.keySet())
+        {
+            if (filted != null && !filted.contains(bone))
+            {
+                continue;
+            }
+
+            String sheetID = PerLimbService.toPoseBoneKey(FormUtils.getPath(form), bone);
+            UIKeyframeSheet sheet = dope.getSheet(sheetID);
+
+            if (sheet != null)
+            {
+                int insert = sheet.channel.insert(current + i, pose.get(bone));
+
+                sheet.selection.add(insert);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")

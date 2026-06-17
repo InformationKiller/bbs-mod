@@ -45,7 +45,8 @@
         "BlockEntityRenderDispatcherMixin",
         "WorldMixin",
         "LivingEntityRendererInvoker",
-        "EntityRenderDispatcherMixin"
+        "EntityRenderDispatcherMixin",
+        "RenderPhaseMixin"
     ],
     "injectors": {
         "defaultRequire": 1

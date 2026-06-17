@@ -479,6 +479,8 @@
     "bbs.ui.film.replay.animation_to_pose.length": "動畫長度",
     "bbs.ui.film.replay.animation_to_pose.only_keyframes": "僅關鍵幀",
     "bbs.ui.film.replay.animation_to_pose.only_keyframes-tooltip": "啟用後，將不會為每一刻烘焙動畫，而是僅在存在關鍵幀的位置生成姿勢... 對於使用 MoLang 驅動的動畫，建議禁用此選項！",
+	"bbs.ui.film.replay.animation_to_pose.to_limbs": "逐肢體動畫",
+	"bbs.ui.film.replay.animation_to_pose.to_limbs-tooltip": "將關鍵幀寫入對應肢體而非姿態。",
     "bbs.ui.film.replay.animation_to_pose.step": "烘焙步階",
     "bbs.ui.film.replay.animation_to_pose.title": "動畫轉姿勢",
     "bbs.ui.film.replay.context.add": "在此處新增回放",

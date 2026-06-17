@@ -38,10 +38,38 @@ public class RenderTickCounterMixin
 
         if (videoRecorder.isRecording())
         {
-            if (videoRecorder.getCounter() == 0)
+            BBSRendering.canRender = false;
+
+            if (this.heldFrames == 0)
             {
-                this.tickDelta = 0;
-                this.heldFrames = 0;
+                this.lastFrameDuration = 1000F / (float) BBSRendering.getVideoFrameRate() / this.tickTime;
+                this.prevTimeMillis = timeMillis;
+
+                if (videoRecorder.getCounter() == 0)
+                {
+                    this.tickDelta = 0;
+                    BBSRendering.measuringTimeOverride = true;
+                    BBSRendering.measuringTimeValue = timeMillis;
+                }
+                else
+                {
+                    this.tickDelta += this.lastFrameDuration;
+                    BBSRendering.measuringTimeValue += 1000L / BBSRendering.getVideoFrameRate();
+                }
+
+                int i = (int) this.tickDelta;
+
+                this.tickDelta -= (float) i;
+
+                videoRecorder.serverTicks += i;
+
+                info.setReturnValue(i);
+            }
+            else
+            {
+                this.lastFrameDuration = 0F;
+
+                info.setReturnValue(0);
             }
 
             this.heldFrames += 1;
@@ -49,34 +77,13 @@ public class RenderTickCounterMixin
             if (this.heldFrames >= BBSSettings.videoHeldFrames.get())
             {
                 this.heldFrames = 0;
-            }
-
-            if (this.heldFrames == 0)
-            {
-                this.lastFrameDuration = 1000F / (float) BBSRendering.getVideoFrameRate() / this.tickTime;
-                this.prevTimeMillis = timeMillis;
-                this.tickDelta += this.lastFrameDuration;
-
-                int i = (int) this.tickDelta;
-
-                this.tickDelta -= (float) i;
-
-                videoRecorder.serverTicks += i;
                 BBSRendering.canRender = true;
-
-                info.setReturnValue(i);
-            }
-            else
-            {
-                this.lastFrameDuration = 0F;
-                BBSRendering.canRender = false;
-
-                info.setReturnValue(0);
             }
         }
         else
         {
             this.heldFrames = 0;
+            BBSRendering.measuringTimeOverride = false;
         }
     }
 }

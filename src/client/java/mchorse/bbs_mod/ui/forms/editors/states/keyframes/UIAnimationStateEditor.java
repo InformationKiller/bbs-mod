@@ -227,7 +227,7 @@ public class UIAnimationStateEditor extends UIElement
                     int mouseY = this.getContext().mouseY;
                     UIKeyframeSheet sheet = this.keyframeEditor.view.getGraph().getSheet(mouseY);
 
-                    if (sheet != null && sheet.channel.getFactory() == KeyframeFactories.POSE && sheet.id.equals("pose"))
+                    if (sheet != null && sheet.channel.getFactory() == KeyframeFactories.POSE && sheet.id.equals("pose") || sheet.id.endsWith(FormUtils.PATH_SEPARATOR + "pose"))
                     {
                         menu.action(Icons.POSE, UIKeys.FILM_REPLAY_CONTEXT_ANIMATION_TO_KEYFRAMES, () ->
                         {
@@ -235,13 +235,13 @@ public class UIAnimationStateEditor extends UIElement
 
                             if (model != null)
                             {
-                                UIOverlay.addOverlay(this.getContext(), new UIAnimationToPoseOverlayPanel((animationKey, onlyKeyframes, length, step) ->
+                                UIOverlay.addOverlay(this.getContext(), new UIAnimationToPoseOverlayPanel((animationKey, onlyKeyframes, toLimbs, length, step) ->
                                 {
                                     int current = this.editor.getCursor();
                                     IEntity entity = this.editor.renderer.getTargetEntity();
 
                                     UIReplaysEditorUtils.animationToPoseKeyframes(this.keyframeEditor, sheet, modelForm, entity, current, animationKey, onlyKeyframes, length, step);
-                                }, modelForm, sheet), 200, 197);
+                                }, modelForm, sheet), 200, 210);
                             }
                         });
                     }

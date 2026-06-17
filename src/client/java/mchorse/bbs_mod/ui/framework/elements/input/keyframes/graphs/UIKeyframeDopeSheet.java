@@ -1370,6 +1370,15 @@ public class UIKeyframeDopeSheet implements IUIKeyframeGraph
         }
     }
 
+    public void openPoseTab(UIKeyframeSheet parent)
+    {
+        if (parent != null && !this.expandedPoseTabs.contains(parent))
+        {
+            this.togglePoseTab(parent);
+            this.updateScrollSize();
+        }
+    }
+
     public void renderLabels(UIContext context, Area area)
     {
         if (!this.elements.isEmpty())

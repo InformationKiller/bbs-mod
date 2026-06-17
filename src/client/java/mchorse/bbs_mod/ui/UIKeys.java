@@ -310,6 +310,8 @@ public class UIKeys
     public static final IKey FILM_REPLAY_ANIMATION_TO_POSE_LENGTH = L10n.lang("bbs.ui.film.replay.animation_to_pose.length");
     public static final IKey FILM_REPLAY_ANIMATION_TO_POSE_ONLY_KEYFRAMES = L10n.lang("bbs.ui.film.replay.animation_to_pose.only_keyframes");
     public static final IKey FILM_REPLAY_ANIMATION_TO_POSE_ONLY_KEYFRAMES_TOOLTIP = L10n.lang("bbs.ui.film.replay.animation_to_pose.only_keyframes-tooltip");
+    public static final IKey FILM_REPLAY_ANIMATION_TO_POSE_TO_LIMBS = L10n.lang("bbs.ui.film.replay.animation_to_pose.to_limbs");
+    public static final IKey FILM_REPLAY_ANIMATION_TO_POSE_TO_LIMBS_TOOLTIP = L10n.lang("bbs.ui.film.replay.animation_to_pose.to_limbs-tooltip");
     public static final IKey FILM_REPLAY_ANIMATION_TO_POSE_STEP = L10n.lang("bbs.ui.film.replay.animation_to_pose.step");
     public static final IKey FILM_REPLAY_ANIMATION_TO_POSE_TITLE = L10n.lang("bbs.ui.film.replay.animation_to_pose.title");
     public static final IKey FILM_REPLAY_AXES_PREVIEW = L10n.lang("bbs.ui.film.replay.axes_preview");

@@ -78,6 +78,9 @@ public class BBSRendering
     public static boolean renderingWorld;
     public static int lastAction;
 
+    public static boolean measuringTimeOverride;
+    public static long measuringTimeValue;
+
     private static boolean customSize;
     private static boolean iris;
     private static boolean sodium;

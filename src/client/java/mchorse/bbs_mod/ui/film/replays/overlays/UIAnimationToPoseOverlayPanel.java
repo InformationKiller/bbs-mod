@@ -18,6 +18,7 @@ public class UIAnimationToPoseOverlayPanel extends UIOverlayPanel
 {
     public UIStringList list;
     public UIToggle onlyKeyframes;
+    public UIToggle toLimbs;
     public UITrackpad length;
     public UITrackpad step;
     public UIButton generate;
@@ -44,6 +45,9 @@ public class UIAnimationToPoseOverlayPanel extends UIOverlayPanel
         this.onlyKeyframes = new UIToggle(UIKeys.FILM_REPLAY_ANIMATION_TO_POSE_ONLY_KEYFRAMES, (b) -> {});
         this.onlyKeyframes.tooltip(UIKeys.FILM_REPLAY_ANIMATION_TO_POSE_ONLY_KEYFRAMES_TOOLTIP);
         this.onlyKeyframes.setValue(true);
+        this.toLimbs = new UIToggle(UIKeys.FILM_REPLAY_ANIMATION_TO_POSE_TO_LIMBS, (b) -> {});
+        this.toLimbs.tooltip(UIKeys.FILM_REPLAY_ANIMATION_TO_POSE_TO_LIMBS_TOOLTIP);
+        this.toLimbs.setEnabled(sheet.id.endsWith("pose"));
         this.length = new UITrackpad();
         this.length.integer();
         this.length.tooltip(UIKeys.FILM_REPLAY_ANIMATION_TO_POSE_LENGTH);
@@ -55,6 +59,7 @@ public class UIAnimationToPoseOverlayPanel extends UIOverlayPanel
             this.callback.animationToPoseKeyframes(
                 this.list.getCurrentFirst(),
                 this.onlyKeyframes.getValue(),
+                this.toLimbs.getValue(),
                 (int) this.length.getValue(),
                 (int) this.step.getValue()
             );
@@ -62,7 +67,7 @@ public class UIAnimationToPoseOverlayPanel extends UIOverlayPanel
             this.close();
         });
 
-        UIScrollView scroll = UI.scrollView(5, 6, this.list, this.onlyKeyframes, UI.row(this.length, this.step), this.generate);
+        UIScrollView scroll = UI.scrollView(5, 6, this.list, this.onlyKeyframes, this.toLimbs, UI.row(this.length, this.step), this.generate);
 
         scroll.full(this.content);
         this.content.add(scroll);
@@ -78,6 +83,6 @@ public class UIAnimationToPoseOverlayPanel extends UIOverlayPanel
 
     public static interface IUIAnimationPoseCallback
     {
-        public void animationToPoseKeyframes(String animationKey, boolean onlyKeyframes, int length, int step);
+        public void animationToPoseKeyframes(String animationKey, boolean onlyKeyframes, boolean toLimbs, int length, int step);
     }
 }
