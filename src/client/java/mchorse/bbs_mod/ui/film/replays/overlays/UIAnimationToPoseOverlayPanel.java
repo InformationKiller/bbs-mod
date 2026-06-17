@@ -47,7 +47,7 @@ public class UIAnimationToPoseOverlayPanel extends UIOverlayPanel
         this.onlyKeyframes.setValue(true);
         this.toLimbs = new UIToggle(UIKeys.FILM_REPLAY_ANIMATION_TO_POSE_TO_LIMBS, (b) -> {});
         this.toLimbs.tooltip(UIKeys.FILM_REPLAY_ANIMATION_TO_POSE_TO_LIMBS_TOOLTIP);
-        this.toLimbs.setEnabled(sheet.id.endsWith("pose"));
+        this.toLimbs.setEnabled(sheet.id.endsWith("pose") && modelForm.boneTracks.get());
         this.length = new UITrackpad();
         this.length.integer();
         this.length.tooltip(UIKeys.FILM_REPLAY_ANIMATION_TO_POSE_LENGTH);
