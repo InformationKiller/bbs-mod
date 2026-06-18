@@ -405,6 +405,11 @@ public class BBSRendering
         GL11.glCopyTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, 0, 0, framebuffer.textureWidth, framebuffer.textureHeight);
         texture.unbind();
 
+        if (BBSModClient.getVideoRecorder().isRecording() && canRender)
+        {
+            BBSModClient.getVideoRecorder().recordFrame();
+        }
+
         toggleFramebuffer(false);
 
         if (pendingExportResolutionAction != null)

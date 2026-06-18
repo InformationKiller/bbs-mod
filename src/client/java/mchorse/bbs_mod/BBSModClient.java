@@ -501,14 +501,6 @@ public class BBSModClient implements ClientModInitializer
             }
         });
 
-        WorldRenderEvents.LAST.register((context) ->
-        {
-            if (videoRecorder.isRecording() && BBSRendering.canRender)
-            {
-                videoRecorder.recordFrame();
-            }
-        });
-
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
         {
             dashboard = null;
