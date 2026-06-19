@@ -282,6 +282,8 @@ public class VideoRecorder
             return;
         }
 
+        int previousTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
+
         if (OS.CURRENT == OS.MACOS)
         {
             this.recordFrameDirect();
@@ -290,6 +292,8 @@ public class VideoRecorder
         {
             this.recordFramePBO();
         }
+
+        GL30.glBindTexture(GL30.GL_TEXTURE_2D, previousTexture);
 
         this.counter += 1;
     }
