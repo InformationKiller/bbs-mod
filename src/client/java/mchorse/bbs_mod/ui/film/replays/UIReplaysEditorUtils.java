@@ -16,6 +16,7 @@ import mchorse.bbs_mod.cubic.physics.ModelPhysicsIO;
 import mchorse.bbs_mod.film.replays.FormProperties;
 import mchorse.bbs_mod.film.replays.PerLimbService;
 import mchorse.bbs_mod.film.replays.Replay;
+import mchorse.bbs_mod.film.replays.PerLimbService.PoseBonePath;
 import mchorse.bbs_mod.forms.FormUtils;
 import mchorse.bbs_mod.forms.FormUtilsClient;
 import mchorse.bbs_mod.forms.entities.IEntity;
@@ -642,9 +643,14 @@ public class UIReplaysEditorUtils
 
     private static void openLimbTab(UIKeyframeEditor keyframeEditor, String key)
     {
-        String formPath = PerLimbService.parsePoseBonePath(key).formPath();
-        UIKeyframeSheet sheet = keyframeEditor.view.getGraph().getSheet(formPath.isEmpty() ? "pose" : formPath + FormUtils.PATH_SEPARATOR + "pose");
-        keyframeEditor.view.getDopeSheet().openPoseTab(sheet);
+        PoseBonePath path = PerLimbService.parsePoseBonePath(key);
+
+        if (path != null)
+        {
+            String formPath = PerLimbService.parsePoseBonePath(key).formPath();
+            UIKeyframeSheet sheet = keyframeEditor.view.getGraph().getSheet(formPath.isEmpty() ? "pose" : formPath + FormUtils.PATH_SEPARATOR + "pose");
+            keyframeEditor.view.getDopeSheet().openPoseTab(sheet);
+        }
     }
 
     private static boolean pickProperty(UIKeyframeEditor keyframeEditor, ICursor filmPanel, String bone, UIKeyframeSheet sheet, boolean insert)

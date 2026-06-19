@@ -43,7 +43,7 @@ public class UIFilmSelectionPanel extends UISelectionScreen<Film>
         this.duplicateCurrentFilm = new UIIcon(Icons.SCENE, (b) -> this.openDuplicateCurrentFilmPrompt());
         this.duplicateCurrentFilm.wh(20, 20);
 
-        icons.add(this.duplicateCurrentFilm);
+        // icons.add(this.duplicateCurrentFilm);
     }
 
     @Override

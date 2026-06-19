@@ -130,6 +130,7 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
     public UIIcon openCameraEditor;
     public UIIcon openReplayEditor;
     public UIIcon openActionEditor;
+    public UIIcon openFilmList;
 
     /** When true, docking is disabled; panel drag handles and their top offset are hidden. */
     private boolean layoutLocked = true;
@@ -186,7 +187,7 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
     public static final int EDIT_PANEL_TOP_OFFSET_PX = 20;
     private static final int FILM_TOP_BAR_BUTTON_SIZE = UIDataTabs.TABS_HEIGHT_PX;
     private static final int FILM_TOP_BAR_SEPARATOR_WIDTH = 8;
-    private static final int FILM_TOP_BAR_ACTIONS_WIDTH = FILM_TOP_BAR_BUTTON_SIZE * 4 + FILM_TOP_BAR_SEPARATOR_WIDTH;
+    private static final int FILM_TOP_BAR_ACTIONS_WIDTH = FILM_TOP_BAR_BUTTON_SIZE * 6 + FILM_TOP_BAR_SEPARATOR_WIDTH * 2;
     private final List<UIDockStackTabs> dockStackTabs = new ArrayList<>();
     private final Map<String, DockStackInfo> dockStackByPanelId = new HashMap<>();
     private UIElement selectedMainEditorPanel;
@@ -411,6 +412,7 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
         this.openCameraEditor = new UIIcon(Icons.FRUSTUM, (b) -> this.showPanel(this.cameraEditor));
         this.openReplayEditor = new UIIcon(Icons.SCENE, (b) -> this.showPanel(this.replayEditor));
         this.openActionEditor = new UIIcon(Icons.ACTION, (b) -> this.showPanel(this.actionEditor));
+        this.openFilmList = new UIIcon(Icons.FILM, (b) -> this.openFilmListOverlay());
 
         this.layoutPresetsController = new UICopyPasteController(PresetManager.LAYOUTS, "_CopyFilmLayout")
             .supplier(this::getFilmLayoutPresetData)
@@ -420,12 +422,14 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
         this.openCameraEditor.wh(FILM_TOP_BAR_BUTTON_SIZE, FILM_TOP_BAR_BUTTON_SIZE).tooltip(UIKeys.FILM_OPEN_CAMERA_EDITOR, Direction.BOTTOM);
         this.openReplayEditor.wh(FILM_TOP_BAR_BUTTON_SIZE, FILM_TOP_BAR_BUTTON_SIZE).tooltip(UIKeys.FILM_OPEN_REPLAY_EDITOR, Direction.BOTTOM);
         this.openActionEditor.wh(FILM_TOP_BAR_BUTTON_SIZE, FILM_TOP_BAR_BUTTON_SIZE).tooltip(UIKeys.FILM_OPEN_ACTION_EDITOR, Direction.BOTTOM);
+        this.openFilmList.wh(FILM_TOP_BAR_BUTTON_SIZE, FILM_TOP_BAR_BUTTON_SIZE).tooltip(UIKeys.FILM_TITLE, Direction.BOTTOM);
+        this.saveIcon.wh(FILM_TOP_BAR_BUTTON_SIZE, FILM_TOP_BAR_BUTTON_SIZE).tooltip(UIKeys.GENERAL_SAVE, Direction.BOTTOM);
 
         this.topBarActions = new UIElement();
         this.topBarActions.relative(this.tabBar).x(1F, -FILM_TOP_BAR_ACTIONS_WIDTH).w(FILM_TOP_BAR_ACTIONS_WIDTH).h(UIDataTabs.TABS_HEIGHT_PX).row(0).resize();
         this.topBarSeparator = new UIElement();
         this.topBarSeparator.wh(FILM_TOP_BAR_SEPARATOR_WIDTH, UIDataTabs.TABS_HEIGHT_PX);
-        this.topBarActions.add(new UIRenderable(this::renderTopBarActions), this.openCameraEditor, this.openReplayEditor, this.openActionEditor, this.topBarSeparator, this.openFilmMenu);
+        this.topBarActions.add(new UIRenderable(this::renderTopBarActions), this.openFilmList, this.saveIcon, this.topBarSeparator, this.openCameraEditor, this.openReplayEditor, this.openActionEditor, this.topBarSeparator, this.openFilmMenu);
         this.tabBar.add(this.topBarActions);
 
         /* Setup elements */
@@ -1786,14 +1790,14 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
 
     private void fillFilmContextMenu(ContextMenuManager menu)
     {
-        menu.action(Icons.FILM, UIKeys.FILM_TITLE, this::openFilmListOverlay);
+        // menu.action(Icons.FILM, UIKeys.FILM_TITLE, this::openFilmListOverlay);
 
         if (this.data == null)
         {
             return;
         }
 
-        menu.action(Icons.SAVED, UIKeys.GENERAL_SAVE, this::save);
+        // menu.action(Icons.SAVED, UIKeys.GENERAL_SAVE, this::save);
         menu.action(Icons.LAYOUT, UIKeys.FILM_LAYOUT_PRESETS, this::openLayoutPresetsMenu);
         menu.action(Icons.LINK, UIKeys.FILM_LAYOUT_BIND_TO_EDITOR, this.isCurrentFilmLayoutBound(), this::toggleCurrentFilmLayoutBinding);
         menu.action(Icons.REFRESH, UIKeys.FILM_LAYOUT_RESET, this::resetFilmLayout);
@@ -2252,7 +2256,7 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
             UIOverlay.addOverlay(this.getContext(), panel);
         });
 
-        crudPanel.icons.add(this.duplicateFilm);
+        // crudPanel.icons.add(this.duplicateFilm);
 
         return crudPanel;
     }
@@ -2620,11 +2624,12 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
             this.undoHandler = null;
         }
 
-        this.openFilmMenu.setEnabled(true);
+        this.openFilmMenu.setEnabled(data != null);
         this.openCameraEditor.setEnabled(data != null);
         this.openReplayEditor.setEnabled(data != null);
         this.openActionEditor.setEnabled(data != null);
         this.duplicateFilm.setEnabled(data != null);
+        this.saveIcon.setEnabled(data != null);
 
         this.actionEditor.setClips(null);
         this.runner.setWork(data == null ? null : data.camera);
@@ -2816,6 +2821,9 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
             return;
         }
 
+        this.renderTopBarButton(context, this.openFilmList, false);
+        this.renderTopBarButton(context, this.saveIcon, false);
+        this.renderTopBarSeparator(context);
         this.renderTopBarButton(context, this.openCameraEditor, this.cameraEditor.isVisible());
         this.renderTopBarButton(context, this.openReplayEditor, this.replayEditor.isVisible());
         this.renderTopBarButton(context, this.openActionEditor, this.actionEditor.isVisible());
@@ -3064,8 +3072,8 @@ public class UIFilmPanel extends UIDataDashboardPanel<Film> implements IFlightSu
      */
     private void renderIcons(UIContext context)
     {
-        int x = this.iconBar.area.ex() - 18;
-        int y = this.iconBar.area.ey() - EDIT_PANEL_TOP_OFFSET_PX * 2 - 20;
+        int x = this.preview.area.getX();
+        int y = this.preview.area.getY();
 
         if (BBSSettings.editorLoop.get())
         {

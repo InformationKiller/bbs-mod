@@ -100,7 +100,7 @@ public class UISelectionScreen<T extends ValueGroup> extends UIElement
         iconRow.row(0).resize().height(20);
         iconRow.relative(this.header).x(1F).y(0.5F).anchor(1F, 0.5F);
 
-        this.names = new UISearchList<>(new UIDataPathList((list) -> this.panel.pickData(list.get(0).toString())));
+        this.names = new UISearchList<>(new UIDataPathList((list) -> this.panel.pickAndCheck(list.get(0).toString())));
         this.names.full(this.listWrap);
         this.namesList = (UIDataPathList) this.names.list;
         this.namesList.multi();

@@ -531,6 +531,23 @@ public abstract class UIDataDashboardPanel <T extends ValueGroup> extends UICRUD
         this.requestData(id);
     }
 
+    public void pickAndCheck(String id)
+    {
+        if (this.tabsEnabled && id != null)
+        {
+            for (int i = 0; i < this.tabs.size(); i++)
+            {
+                if (id.equals(this.tabs.get(i).dataId))
+                {
+                    this.switchTab(i);
+                    return;
+                }
+            }
+        }
+
+        this.pickData(id);
+    }
+
     public void requestData(String id)
     {
         this.getType().getRepository().load(id, (data) -> this.fill((T) data));
