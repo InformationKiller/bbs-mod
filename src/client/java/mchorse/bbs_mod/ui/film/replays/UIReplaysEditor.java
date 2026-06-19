@@ -573,7 +573,7 @@ public class UIReplaysEditor extends UIElement {
                 int mouseY = this.getContext().mouseY;
                 UIKeyframeSheet sheet = this.keyframeEditor.view.getGraph().getSheet(mouseY);
 
-                if (sheet != null && sheet.channel.getFactory() == KeyframeFactories.POSE && (sheet.id.endsWith(FormUtils.PATH_SEPARATOR + "pose") || sheet.id.substring(sheet.id.lastIndexOf(FormUtils.PATH_SEPARATOR)).startsWith("pose_overlay")))
+                if (sheet != null && sheet.channel.getFactory() == KeyframeFactories.POSE && (sheet.id.equals("pose") || sheet.id.endsWith(FormUtils.PATH_SEPARATOR + "pose") || sheet.id.startsWith("pose_overlay") || sheet.id.contains(FormUtils.PATH_SEPARATOR) && sheet.id.substring(sheet.id.lastIndexOf(FormUtils.PATH_SEPARATOR)).startsWith(FormUtils.PATH_SEPARATOR + "pose_overlay")))
                 {
                     menu.action(Icons.POSE, UIKeys.FILM_REPLAY_CONTEXT_ANIMATION_TO_KEYFRAMES, () ->
                     {
