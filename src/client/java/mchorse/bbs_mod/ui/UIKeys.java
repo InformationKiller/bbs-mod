@@ -545,6 +545,7 @@ public class UIKeys
     public static final IKey GENERAL_COPY = L10n.lang("bbs.ui.copy");
     public static final IKey GENERAL_DOWNLOAD = L10n.lang("bbs.ui.download");
     public static final IKey GENERAL_DUPE = L10n.lang("bbs.ui.dupe");
+    public static final IKey GENERAL_DUPE_EXISTED = L10n.lang("bbs.ui.dupe-existed");
     public static final IKey GENERAL_EDIT = L10n.lang("bbs.ui.edit");
     public static final IKey GENERAL_ERROR = L10n.lang("bbs.ui.error");
     public static final IKey GENERAL_EXPORT = L10n.lang("bbs.ui.export");
@@ -721,6 +722,7 @@ public class UIKeys
     public static final IKey PANELS_KEYS_OPEN_NEW_TAB = L10n.lang("bbs.ui.panels.keys.open_new_tab");
     public static final IKey PANELS_KEYS_TOGGLE_CHALKBOARD = L10n.lang("bbs.ui.panels.keys.toggle_chalkboard");
     public static final IKey PANELS_TABS_NEW_TAB = L10n.lang("bbs.ui.panels.tabs.new_tab");
+    public static final IKey PANELS_TABS_CONTEXT_CREATE_COPY = L10n.lang("bbs.ui.panels.tabs.context.create_copy");
     public static final IKey PANELS_TABS_CONTEXT_CLOSE_OTHERS = L10n.lang("bbs.ui.panels.tabs.context.close_others");
     public static final IKey PANELS_TABS_CONTEXT_CLOSE_LEFT = L10n.lang("bbs.ui.panels.tabs.context.close_left");
     public static final IKey PANELS_TABS_CONTEXT_CLOSE_RIGHT = L10n.lang("bbs.ui.panels.tabs.context.close_right");

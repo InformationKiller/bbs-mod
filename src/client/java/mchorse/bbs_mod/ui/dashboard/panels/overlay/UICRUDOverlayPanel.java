@@ -165,7 +165,7 @@ public abstract class UICRUDOverlayPanel extends UIOverlayPanel
         UIOverlay.addOverlay(this.getContext(), panel);
     }
 
-    protected abstract void dupeData(String name);
+    public abstract void dupeData(String name);
 
     protected void renameData(UIIcon element)
     {

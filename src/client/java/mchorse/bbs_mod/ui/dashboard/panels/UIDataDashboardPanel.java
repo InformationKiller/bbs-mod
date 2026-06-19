@@ -14,6 +14,8 @@ import mchorse.bbs_mod.ui.dashboard.panels.tabs.UIDataTabs;
 import mchorse.bbs_mod.ui.framework.UIContext;
 import mchorse.bbs_mod.ui.framework.elements.UIElement;
 import mchorse.bbs_mod.ui.framework.elements.buttons.UIIcon;
+import mchorse.bbs_mod.ui.framework.elements.overlay.UIOverlay;
+import mchorse.bbs_mod.ui.framework.elements.overlay.UIPromptOverlayPanel;
 import mchorse.bbs_mod.ui.utils.UIDataUtils;
 import mchorse.bbs_mod.ui.utils.icons.Icon;
 import mchorse.bbs_mod.ui.utils.icons.Icons;
@@ -24,6 +26,8 @@ import mchorse.bbs_mod.ui.utils.UIUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class UIDataDashboardPanel <T extends ValueGroup> extends UICRUDDashboardPanel
 {
@@ -736,5 +740,47 @@ public abstract class UIDataDashboardPanel <T extends ValueGroup> extends UICRUD
     protected boolean canSave(UIContext context)
     {
         return true;
+    }
+
+    public void createCopyToNewTab(DataTab tab)
+    {
+        String from = tab.dataId;
+
+        UIPromptOverlayPanel panel = new UIPromptOverlayPanel(
+            UIKeys.GENERAL_DUPE,
+            UIKeys.PANELS_MODALS_DUPE,
+            (str) -> this.dupeDataFrom(tab.dataId, str)
+        );
+
+        long i = 0;
+
+        Pattern pattern = Pattern.compile("^(.*?)(\\d+)$");
+        Matcher matcher = pattern.matcher(from);
+        if (matcher.find()) {
+            i = Long.parseLong(matcher.group(2));
+            from = matcher.group(1);
+        }
+
+        i++;
+        while (this.overlay.namesList.hasInHierarchy(from + i)) i++;
+
+        panel.text.setText(from + i);
+        panel.text.filename();
+
+        UIOverlay.addOverlay(this.getContext(), panel);
+    }
+
+    public void dupeDataFrom(String from, String to)
+    {
+        if (!this.overlay.namesList.hasInHierarchy(to))
+        {
+            this.addTab();
+            this.pickData(from);
+            this.overlay.dupeData(to);
+        }
+        else
+        {
+            this.getContext().notifyInfo(UIKeys.GENERAL_DUPE_EXISTED);
+        }
     }
 }

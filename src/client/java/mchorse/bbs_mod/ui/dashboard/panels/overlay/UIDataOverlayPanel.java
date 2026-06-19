@@ -124,7 +124,7 @@ public class UIDataOverlayPanel <T extends ValueGroup> extends UICRUDOverlayPane
     }
 
     @Override
-    protected void dupeData(String name)
+    public void dupeData(String name)
     {
         if (name.trim().isEmpty())
         {

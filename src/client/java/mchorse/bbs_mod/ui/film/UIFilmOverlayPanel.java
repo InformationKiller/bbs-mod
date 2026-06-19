@@ -15,7 +15,7 @@ public class UIFilmOverlayPanel extends UIDataOverlayPanel<Film>
     }
 
     @Override
-    protected void dupeData(String name)
+    public void dupeData(String name)
     {
         super.dupeData(name);
 

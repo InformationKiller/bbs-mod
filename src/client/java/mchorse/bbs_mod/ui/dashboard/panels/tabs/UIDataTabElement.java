@@ -48,6 +48,7 @@ public class UIDataTabElement extends UIClickable<UIDataTabElement>
 
         this.context((menu) ->
         {
+            menu.action(Icons.DUPE, UIKeys.PANELS_TABS_CONTEXT_CREATE_COPY, this::createCopy);
             menu.action(Icons.CLOSE, UIKeys.PANELS_TABS_CONTEXT_CLOSE_OTHERS, this::closeOtherTabs);
             menu.action(Icons.ARROW_LEFT, UIKeys.PANELS_TABS_CONTEXT_CLOSE_LEFT, this::closeTabsLeft);
             menu.action(Icons.ARROW_RIGHT, UIKeys.PANELS_TABS_CONTEXT_CLOSE_RIGHT, this::closeTabsRight);
@@ -64,6 +65,11 @@ public class UIDataTabElement extends UIClickable<UIDataTabElement>
         this.tab = tab;
         this.label = label;
         this.icon = icon;
+    }
+
+    private void createCopy()
+    {
+        this.panel.createCopyToNewTab(this.tab);
     }
 
     private void closeOtherTabs()
