@@ -659,7 +659,7 @@ public class UIReplaysEditor extends UIElement {
                     boolean selectedIK = false;
                     for (UIKeyframeSheet s : sheets)
                     {
-                        selectedIK |= PerLimbService.isPoseBoneChannel(sheet.id) && controllers.contains(sheet.id) && s.selection.hasAny();
+                        selectedIK |= PerLimbService.isPoseBoneChannel(s.id) && controllers.contains(s.id) && s.selection.hasAny();
                     }
 
                     if (selectedIK)
