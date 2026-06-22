@@ -145,9 +145,10 @@ public class BBSRendering
     public static File getVideoFolder()
     {
         File movies = new File(BBSMod.getSettingsFolder().getParentFile(), "movies");
-        File exportPath = new File(BBSSettings.videoExportPath.get());
+        String exportPathStr = BBSSettings.videoExportPath.get();
+        File exportPath = new File(exportPathStr);
 
-        if (exportPath.isDirectory())
+        if (!exportPathStr.isEmpty() && !exportPath.isFile())
         {
             movies = exportPath;
         }

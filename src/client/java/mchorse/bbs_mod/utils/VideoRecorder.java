@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -91,7 +90,7 @@ public class VideoRecorder
 
             movies.mkdirs();
 
-            Path path = Paths.get(movies.toString());
+            Path path = Path.of(movies.toString());
             String movieName = StringUtils.createTimestampFilename();
             String params = BBSSettings.videoExportAlpha.get()
                 ? BBSSettings.videoArgumentsAlpha.get()
