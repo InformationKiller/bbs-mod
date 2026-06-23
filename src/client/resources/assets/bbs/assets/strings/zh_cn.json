@@ -1524,6 +1524,7 @@
     "bbs.ui.textures.tools.selection": "选区",
     "bbs.ui.transforms.combined": "组合",
     "bbs.ui.video_settings.swap": "交换宽高",
+    "bbs.ui.video.filename": "视频文件名（留空则使用时间作为文件名）\n注意：同名文件将被自动覆盖！！",
     "keybinds.config.replays_editor.title": "回放编辑器",
     "keybinds.config.replays_editor.tooltip": "用于快速切换标签页等的快捷键"
 }

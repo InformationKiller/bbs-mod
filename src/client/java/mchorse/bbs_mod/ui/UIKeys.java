@@ -1113,6 +1113,8 @@ public class UIKeys
     public static final IKey IMPORTER_STRUCTURE_NBT = L10n.lang("bbs.ui.importer.structure");
     public static final IKey MODEL_BLOCKS_LIGHT_LEVEL = L10n.lang("bbs.ui.model_blocks.light_level");
 
+    public static final IKey VIDEO_FILENAME = L10n.lang("bbs.ui.video.filename");
+
     /* Key collections */
     public static final KeyCollection C_CLIP = new KeyCollection("bbs.ui.camera.clips.^")
         .load(BBSMod.getFactoryCameraClips().getStringKeys())

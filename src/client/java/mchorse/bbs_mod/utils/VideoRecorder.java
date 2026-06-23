@@ -65,7 +65,7 @@ public class VideoRecorder
     /**
      * Start recording the video using ffmpeg
      */
-    public void startRecording(File audioFile, int textureId, int width, int height)
+    public void startRecording(String filename, int textureId, int width, int height)
     {
         if (this.recording)
         {
@@ -91,7 +91,7 @@ public class VideoRecorder
             movies.mkdirs();
 
             Path path = Path.of(movies.toString());
-            String movieName = StringUtils.createTimestampFilename();
+            String movieName = filename.isEmpty() ? StringUtils.createTimestampFilename() : filename;
             String params = BBSSettings.videoExportAlpha.get()
                 ? BBSSettings.videoArgumentsAlpha.get()
                 : BBSSettings.videoArguments.get();
@@ -116,6 +116,7 @@ public class VideoRecorder
 
             args.add(encoder);
             args.addAll(Arrays.asList(params.split(" ")));
+            args.add("-y");
 
             System.out.println("Recording video with following arguments: " + args);
 

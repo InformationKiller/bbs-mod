@@ -30,6 +30,7 @@ import mchorse.bbs_mod.ui.framework.elements.buttons.UIIcon;
 import mchorse.bbs_mod.ui.framework.elements.overlay.UIMessageFolderOverlayPanel;
 import mchorse.bbs_mod.ui.framework.elements.overlay.UIMessageOverlayPanel;
 import mchorse.bbs_mod.ui.framework.elements.overlay.UIOverlay;
+import mchorse.bbs_mod.ui.framework.elements.overlay.UIPromptOverlayPanel;
 import mchorse.bbs_mod.ui.framework.elements.utils.EventPropagation;
 import mchorse.bbs_mod.ui.utils.Area;
 import mchorse.bbs_mod.ui.utils.UI;
@@ -182,12 +183,20 @@ public class UIFilmPreview extends UIElement
                 return;
             }
 
-            int duration = this.panel.getData().camera.calculateDuration();
-            UIFilmPanel.applyExportSizeToBBS();
-            BBSRendering.scheduleAfterNextExportFrame(() ->
-            {
-                this.panel.recorder.startRecording(duration, BBSRendering.getTexture().id, BBSRendering.getVideoWidth(), BBSRendering.getVideoHeight());
-            });
+            UIPromptOverlayPanel panel = new UIPromptOverlayPanel(
+                UIKeys.GENERAL_EXPORT,
+                UIKeys.VIDEO_FILENAME,
+                (str) -> {
+                    int duration = this.panel.getData().camera.calculateDuration();
+                    UIFilmPanel.applyExportSizeToBBS();
+                    BBSRendering.scheduleAfterNextExportFrame(() ->
+                    {
+                        this.panel.recorder.startRecording(str, duration, BBSRendering.getTexture().id, BBSRendering.getVideoWidth(), BBSRendering.getVideoHeight());
+                    });
+                }
+            );
+            UIOverlay.addOverlay(this.getContext(), panel);
+            panel.text.focus(this.getContext());
         });
         this.recordVideo.tooltip(UIKeys.CAMERA_TOOLTIPS_RECORD);
         this.recordVideo.context((menu) ->

@@ -1524,6 +1524,7 @@
     "bbs.ui.textures.tools.selection": "選區",
     "bbs.ui.transforms.combined": "組合",
     "bbs.ui.video_settings.swap": "交換寬高",
+    "bbs.ui.video.filename": "影片檔名（留空則使用時間作為檔名）\n注意：同名檔案將被自動覆蓋！！",
     "keybinds.config.replays_editor.title": "回放編輯器",
     "keybinds.config.replays_editor.tooltip": "用於快速切換標籤頁等的快捷鍵"
 }

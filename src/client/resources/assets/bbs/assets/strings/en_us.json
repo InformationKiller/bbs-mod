@@ -1478,5 +1478,7 @@
     "bbs.config.editor.default_interpolation": "Default interpolation",
     "bbs.config.editor.default_interpolation-comment": "The interpolation type used by default when new keyframes are created (affects pose/keyframe workflow)",
     "bbs.config.editor.default_path_interpolation": "Default path interpolation",
-    "bbs.config.editor.default_path_interpolation-comment": "The interpolation type used by default when a new Path clip is created (applies to Point and Angle interpolation)"
+    "bbs.config.editor.default_path_interpolation-comment": "The interpolation type used by default when a new Path clip is created (applies to Point and Angle interpolation)",
+
+    "bbs.ui.video.filename": "Video file name (leave blank to use time as filename)\nNote: File with the same name will be automatically overwritten!!"
 }

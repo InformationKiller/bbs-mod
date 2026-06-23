@@ -45,6 +45,8 @@ public class UIFilmRecorder extends UIElement
     private boolean stopCancelled;
     private FinishedListener finishedListener;
 
+    private String exportFilename;
+
     public UIFilmRecorder(UIFilmPanel editor)
     {
         super();
@@ -112,10 +114,10 @@ public class UIFilmRecorder extends UIElement
 
     public void startRecording(int duration, Texture texture)
     {
-        this.startRecording(duration, texture.id, texture.width, texture.height);
+        this.startRecording("", duration, texture.id, texture.width, texture.height);
     }
 
-    public void startRecording(int duration, int id, int w, int h)
+    public void startRecording(String filename, int duration, int id, int w, int h)
     {
         VideoRecorder recorder = this.getRecorder();
         UIContext context = this.getUIContext();
@@ -152,6 +154,8 @@ public class UIFilmRecorder extends UIElement
         this.pendingWidth = w;
         this.pendingHeight = h;
 
+        this.exportFilename = filename;
+
         float delaySeconds = Math.max(0F, BBSSettings.videoDelay.get());
         long delayMs = (long) (delaySeconds * 1000F);
 
@@ -179,7 +183,7 @@ public class UIFilmRecorder extends UIElement
 
         try
         {
-            recorder.startRecording(this.pendingAudioFile, this.pendingTextureId, this.pendingWidth, this.pendingHeight);
+            recorder.startRecording(this.exportFilename, this.pendingTextureId, this.pendingWidth, this.pendingHeight);
         }
         catch (Exception e)
         {
