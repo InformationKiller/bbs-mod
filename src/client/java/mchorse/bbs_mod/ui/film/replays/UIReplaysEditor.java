@@ -588,6 +588,7 @@ public class UIReplaysEditor extends UIElement {
                                             (animationKey, onlyKeyframes, toLimbs, length, step) -> {
                                                 int current = this.filmPanel.getCursor();
                                                 IEntity entity = this.filmPanel.getController().getCurrentEntity();
+                                                this.replay.properties.applyProperties(modelForm, current);
 
                                                 if (toLimbs)
                                                 {

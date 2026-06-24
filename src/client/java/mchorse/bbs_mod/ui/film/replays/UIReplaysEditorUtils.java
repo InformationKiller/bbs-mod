@@ -778,6 +778,7 @@ public class UIReplaysEditorUtils
     ) {
         ModelInstance model = ModelFormRenderer.getModel(modelForm);
         Animation animation = model.animations.get(animationKey);
+        Pose defaultPose = modelForm.pose.getOriginalValue();
 
         if (animation != null)
         {
@@ -789,14 +790,14 @@ public class UIReplaysEditorUtils
 
                 for (float i : list)
                 {
-                    fillAnimationPose(sheet, i, model, entity, animation, tick);
+                    fillAnimationPose(sheet, i, model, entity, animation, tick, defaultPose);
                 }
             }
             else
             {
                 for (int i = 0; i < length; i += step)
                 {
-                    fillAnimationPose(sheet, i, model, entity, animation, tick);
+                    fillAnimationPose(sheet, i, model, entity, animation, tick, defaultPose);
                 }
             }
 
@@ -811,6 +812,7 @@ public class UIReplaysEditorUtils
     ) {
         ModelInstance model = ModelFormRenderer.getModel(modelForm);
         Animation animation = model.animations.get(animationKey);
+        Pose defaultPose = modelForm.pose.get();
 
         if (animation != null)
         {
@@ -822,14 +824,14 @@ public class UIReplaysEditorUtils
 
                 for (float i : map.keySet())
                 {
-                    fillAnimationLimbs(keyframeEditor.view.getDopeSheet(), i, modelForm, model, entity, animation, tick, map.get(i));
+                    fillAnimationLimbs(keyframeEditor.view.getDopeSheet(), i, modelForm, model, entity, animation, tick, map.get(i), defaultPose);
                 }
             }
             else
             {
                 for (int i = 0; i < length; i += step)
                 {
-                    fillAnimationLimbs(keyframeEditor.view.getDopeSheet(), i, modelForm, model, entity, animation, tick, null);
+                    fillAnimationLimbs(keyframeEditor.view.getDopeSheet(), i, modelForm, model, entity, animation, tick, getAnimatedLimbs(animation), defaultPose);
                 }
             }
 
@@ -888,17 +890,45 @@ public class UIReplaysEditorUtils
         return map;
     }
 
-    private static void fillAnimationPose(UIKeyframeSheet sheet, float i, ModelInstance model, IEntity entity, Animation animation, int current)
+    private static Set<String> getAnimatedLimbs(Animation animation)
+    {
+        Set<String> set = new HashSet<>();
+
+        for (String bone : animation.parts.keySet())
+        {
+            AnimationPart value = animation.parts.get(bone);
+            for (KeyframeChannel<MolangExpression> channel : value.channels)
+            {
+                for (Keyframe<MolangExpression> keyframe : channel.getKeyframes())
+                {
+                    set.add(bone);
+                }
+            }
+        }
+
+        return set;
+    }
+
+    private static void fillAnimationPose(UIKeyframeSheet sheet, float i, ModelInstance model, IEntity entity, Animation animation, int current, Pose defaultPose)
     {
         model.model.resetPose();
         model.model.applyRaw(entity, animation, i, 0F, false);
 
-        int insert = sheet.channel.insert(current + i, model.model.createPose());
+        Pose pose = model.model.createPose();
+        for (String bone : pose.transforms.keySet())
+        {
+            PoseTransform bonePose = pose.get(bone);
+            bonePose.color.copy(defaultPose.get(bone).color);
+            bonePose.fix = defaultPose.get(bone).fix;
+            bonePose.lighting = defaultPose.get(bone).lighting;
+        }
+
+        int insert = sheet.channel.insert(current + i, pose);
 
         sheet.selection.add(insert);
     }
 
-    private static void fillAnimationLimbs(UIKeyframeDopeSheet dope, float i, ModelForm form, ModelInstance model, IEntity entity, Animation animation, int current, Set<String> filted)
+    private static void fillAnimationLimbs(UIKeyframeDopeSheet dope, float i, ModelForm form, ModelInstance model, IEntity entity, Animation animation, int current, Set<String> filted, Pose defaultPose)
     {
         model.model.resetPose();
         model.model.applyRaw(entity, animation, i, 0F, false);
@@ -917,7 +947,11 @@ public class UIReplaysEditorUtils
 
             if (sheet != null)
             {
-                int insert = sheet.channel.insert(current + i, pose.get(bone));
+                PoseTransform bonePose = pose.get(bone);
+                bonePose.color.copy(defaultPose.get(bone).color);
+                bonePose.fix = defaultPose.get(bone).fix;
+                bonePose.lighting = defaultPose.get(bone).lighting;
+                int insert = sheet.channel.insert(current + i, bonePose);
 
                 sheet.selection.add(insert);
             }
