@@ -27,7 +27,7 @@ public class UIPoseTransformKeyframeFactory extends UIKeyframeFactory<PoseTransf
 {
     public UITrackpad fix;
     public UIColor color;
-    public UIToggle lighting;
+    public UITrackpad lighting;
     public UIPropTransform transform;
 
     public UIPoseTransformKeyframeFactory(Keyframe<PoseTransform> keyframe, UIKeyframes editor)
@@ -61,17 +61,19 @@ public class UIPoseTransformKeyframeFactory extends UIKeyframeFactory<PoseTransf
         this.color.withAlpha();
         this.color.setColor(keyframe.getValue().color.getARGBColor());
 
-        this.lighting = new UIToggle(UIKeys.FORMS_EDITORS_GENERAL_LIGHTING, (b) ->
+        this.lighting = new UITrackpad((b) ->
         {
             if (this.transform.getTransform() instanceof PoseTransform)
             {
-                UIPoseTransforms.apply(editor, keyframe, (poseT) -> poseT.lighting = b.getValue() ? 0F : 1F);
+                UIPoseTransforms.apply(editor, keyframe, (poseT) -> poseT.lighting = b.floatValue());
             }
         });
         this.lighting.h(UIConstants.CONTROL_HEIGHT);
-        this.lighting.setValue(keyframe.getValue().lighting == 0F);
+        this.lighting.limit(0.0, 1.0).increment(0.1);
+        this.lighting.values(0.05, 0.01, 0.1);
+        this.lighting.setValue(keyframe.getValue().lighting);
 
-        this.scroll.add(UI.label(UIKeys.POSE_CONTEXT_FIX), this.fix, UI.row(this.color, this.lighting), this.transform.marginTop(4));
+        this.scroll.add(UI.label(UIKeys.POSE_CONTEXT_FIX), this.fix, this.color, UI.label(UIKeys.FORMS_EDITORS_GENERAL_LIGHTING), this.lighting, this.transform.marginTop(4));
     }
 
     private void toggleFix()

@@ -184,9 +184,9 @@ public class UIPoseKeyframeFactory extends UIKeyframeFactory<Pose>
         }
 
         @Override
-        protected void setLighting(PoseTransform poseTransform, boolean value)
+        protected void setLighting(PoseTransform poseTransform, float value)
         {
-            apply(this.editor, this.keyframe, this.getGroup(poseTransform), (poseT) -> poseT.lighting = value ? 0F : 1F);
+            apply(this.editor, this.keyframe, this.getGroup(poseTransform), (poseT) -> poseT.lighting = value);
         }
     }
 

@@ -36,7 +36,7 @@ public class UIPoseEditor extends UIElement
     public UIPoseBoneStringList groups;
     public UITrackpad fix;
     public UIColor color;
-    public UIToggle lighting;
+    public UITrackpad lighting;
     public UIPropTransform transform;
 
     private String group = "";
@@ -80,13 +80,15 @@ public class UIPoseEditor extends UIElement
                 this.applyChildren((p) -> this.setColor(p, this.color.picker.color.getARGBColor()));
             });
         });
-        this.lighting = new UIToggle(UIKeys.FORMS_EDITORS_GENERAL_LIGHTING, (b) -> this.applyLightingToSelection(b.getValue()));
+        this.lighting = new UITrackpad((b) -> this.applyLightingToSelection(b.floatValue()));
         this.lighting.h(UIConstants.CONTROL_HEIGHT);
+        this.lighting.limit(0.0, 1.0).increment(0.1);
+        this.lighting.values(0.05, 0.01, 0.1);
         this.lighting.context((menu) ->
         {
             menu.action(Icons.DOWNLOAD, UIKeys.POSE_CONTEXT_APPLY, () ->
             {
-                this.applyChildren((p) -> this.setLighting(p, this.lighting.getValue()));
+                this.applyChildren((p) -> this.setLighting(p, (float) this.lighting.getValue()));
             });
         });
         this.transform = this.createTransformEditor();
@@ -95,7 +97,7 @@ public class UIPoseEditor extends UIElement
         this.keys().register(Keys.TRANSFORMATIONS_TOGGLE_FIX, this::toggleFix).category(UIKeys.TRANSFORMS_KEYS_CATEGORY);
 
         this.column().vertical().stretch();
-        this.add(this.groups, UI.label(UIKeys.POSE_CONTEXT_FIX), this.fix, UI.row(this.color, this.lighting), this.transform.marginTop(4));
+        this.add(this.groups, UI.label(UIKeys.POSE_CONTEXT_FIX), this.fix, this.color, UI.label(UIKeys.FORMS_EDITORS_GENERAL_LIGHTING), this.lighting, this.transform.marginTop(4));
     }
 
     private void applyChildren(Consumer<PoseTransform> consumer)
@@ -305,7 +307,7 @@ public class UIPoseEditor extends UIElement
             lastLimb = "";
             this.fix.setValue(0F);
             this.color.setColor(Colors.WHITE);
-            this.lighting.setValue(false);
+            this.lighting.setValue(0F);
             this.transform.setTransform(null);
 
             return;
@@ -319,7 +321,7 @@ public class UIPoseEditor extends UIElement
 
         this.fix.setValue(poseTransform.fix);
         this.color.setColor(poseTransform.color.getARGBColor());
-        this.lighting.setValue(poseTransform.lighting == 0F);
+        this.lighting.setValue(poseTransform.lighting);
         this.transform.setTransform(poseTransform);
     }
 
@@ -373,7 +375,7 @@ public class UIPoseEditor extends UIElement
         this.color.setColor(argb);
     }
 
-    private void applyLightingToSelection(boolean value)
+    private void applyLightingToSelection(float value)
     {
         this.forEachSelectedPose((pt) -> this.setLighting(pt, value));
         this.lighting.setValue(value);
@@ -401,8 +403,8 @@ public class UIPoseEditor extends UIElement
         transform.color.set(value);
     }
 
-    protected void setLighting(PoseTransform poseTransform, boolean value)
+    protected void setLighting(PoseTransform poseTransform, float value)
     {
-        poseTransform.lighting = value ? 0F : 1F;
+        poseTransform.lighting = value;
     }
 }
